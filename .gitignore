@@ -1,41 +1,45 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Whitelist approach — everything is blocked unless explicitly allowed.
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+# 1. Block everything
+*
 
-# testing
-/coverage
+# 2. Allow git to traverse directories
+!*/
 
-# next.js
-/.next/
-/out/
+# 3. Re-block directories that must never be committed
+node_modules/
+.next/
+out/
+build/
+dist/
+coverage/
+.yarn/
+.pnp/
 
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-# typescript
+# 4. Block generated, secret, and OS noise at any depth
+*.log
 *.tsbuildinfo
 next-env.d.ts
+.env
+.env.*
+*.pem
+*.key
+.DS_Store
+Thumbs.db
+.vercel/
+
+# ── Whitelisted root files ────────────────────────────────────────────────
+!.gitignore
+!AGENTS.md
+!CLAUDE.md
+!README.md
+!next.config.ts
+!package.json
+!package-lock.json
+!tsconfig.json
+!postcss.config.mjs
+!eslint.config.mjs
+
+# ── Whitelisted source directories ───────────────────────────────────────
+!app/**
+!public/**
