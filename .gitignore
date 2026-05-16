@@ -39,6 +39,7 @@ Thumbs.db
 !tsconfig.json
 !postcss.config.mjs
 !eslint.config.mjs
+!.clinerules 
 
 # ── Whitelisted source directories ───────────────────────────────────────
 !app/**

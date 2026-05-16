@@ -1,0 +1,110 @@
+[
+  {
+    "id": 1,
+    "name": "Chelsea Veterinary Clinic",
+    "address": "123 King's Road, Chelsea, London SW3 4TX",
+    "phone": "020 7123 4567",
+    "lat": 51.4875,
+    "lng": -0.1687,
+    "hours": "Mon-Fri: 8am-7pm, Sat: 9am-5pm"
+  },
+  {
+    "id": 2,
+    "name": "Hampstead Pet Hospital",
+    "address": "45 Heath Street, Hampstead, London NW3 6UG",
+    "phone": "020 7456 7890",
+    "lat": 51.5558,
+    "lng": -0.1776,
+    "hours": "Mon-Fri: 8am-6pm, Sat: 9am-4pm"
+  },
+  {
+    "id": 3,
+    "name": "Canary Wharf Animal Care",
+    "address": "78 Westferry Circus, Canary Wharf, London E14 8RR",
+    "phone": "020 7789 0123",
+    "lat": 51.5054,
+    "lng": -0.0196,
+    "hours": "Mon-Fri: 7:30am-7:30pm, Sat-Sun: 9am-5pm"
+  },
+  {
+    "id": 4,
+    "name": "Richmond Veterinary Practice",
+    "address": "22 Hill Street, Richmond, London TW9 1TN",
+    "phone": "020 8940 1234",
+    "lat": 51.4613,
+    "lng": -0.3037,
+    "hours": "Mon-Fri: 8am-6pm, Sat: 9am-1pm"
+  },
+  {
+    "id": 5,
+    "name": "Islington Pet Clinic",
+    "address": "156 Upper Street, Islington, London N1 1RA",
+    "phone": "020 7359 5678",
+    "lat": 51.5416,
+    "lng": -0.1030,
+    "hours": "Mon-Fri: 8am-7pm, Sat: 9am-5pm, Sun: 10am-4pm"
+  },
+  {
+    "id": 6,
+    "name": "Wimbledon Animal Hospital",
+    "address": "88 The Broadway, Wimbledon, London SW19 1RH",
+    "phone": "020 8543 2109",
+    "lat": 51.4214,
+    "lng": -0.2057,
+    "hours": "Mon-Sat: 8am-8pm, Sun: 10am-6pm"
+  },
+  {
+    "id": 7,
+    "name": "Shoreditch Veterinary Centre",
+    "address": "234 Old Street, Shoreditch, London EC1V 9EE",
+    "phone": "020 7739 8765",
+    "lat": 51.5254,
+    "lng": -0.0854,
+    "hours": "Mon-Fri: 8am-7pm, Sat: 9am-5pm"
+  },
+  {
+    "id": 8,
+    "name": "Kensington Pet Care",
+    "address": "67 Kensington High Street, London W8 5SE",
+    "phone": "020 7937 4321",
+    "lat": 51.5008,
+    "lng": -0.1931,
+    "hours": "Mon-Fri: 8am-6pm, Sat: 9am-3pm"
+  },
+  {
+    "id": 9,
+    "name": "Greenwich Veterinary Clinic",
+    "address": "12 Greenwich Church Street, London SE10 9BJ",
+    "phone": "020 8858 6543",
+    "lat": 51.4826,
+    "lng": 0.0077,
+    "hours": "Mon-Fri: 8:30am-6:30pm, Sat: 9am-4pm"
+  },
+  {
+    "id": 10,
+    "name": "Clapham Animal Hospital",
+    "address": "99 Clapham High Street, London SW4 7TB",
+    "phone": "020 7622 3456",
+    "lat": 51.4618,
+    "lng": -0.1384,
+    "hours": "Mon-Fri: 7:30am-8pm, Sat-Sun: 9am-6pm"
+  },
+  {
+    "id": 11,
+    "name": "Brixton Pet Clinic",
+    "address": "178 Brixton Road, London SW9 6AT",
+    "phone": "020 7733 7890",
+    "lat": 51.4627,
+    "lng": -0.1123,
+    "hours": "Mon-Fri: 8am-7pm, Sat: 9am-5pm"
+  },
+  {
+    "id": 12,
+    "name": "Notting Hill Veterinary Practice",
+    "address": "55 Notting Hill Gate, London W11 3JS",
+    "phone": "020 7221 5432",
+    "lat": 51.5090,
+    "lng": -0.1967,
+    "hours": "Mon-Fri: 8am-6pm, Sat: 9am-2pm"
+  }
+]
