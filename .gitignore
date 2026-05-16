@@ -43,3 +43,7 @@ Thumbs.db
 # ── Whitelisted source directories ───────────────────────────────────────
 !app/**
 !public/**
+!components/**
+!data/**
+!lib/**
+!docs/**
