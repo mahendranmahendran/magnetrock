@@ -1,0 +1,132 @@
+# MagnetRock Pet Care - Mapsi Integration Project
+
+## Project Context
+This is a reference/demo client website for MagnetRock Pet Care (fictional UK pet care service) integrating Mapsi geospatial APIs. The project demonstrates how Mapsi can replace Google Maps/Mapbox for location-based features at dramatically lower cost.
+
+## Role & Identity
+You are working as a contractor from AlgoLayer Technologies (Mapsi integration team), not as the client. All commits should be authored by:
+- Name: algolayer
+- Email: algolayertech@gmail.com
+
+## Tech Stack
+- **Frontend**: Next.js 14+ (App Router preferred) or SvelteKit
+- **Styling**: Tailwind CSS
+- **Maps**: Leaflet.js with Mapsi tile server
+- **APIs**: Mapsi Geocoding, Routing, Matrix, Isochrone
+- **Deployment**: Vercel (client's account)
+- **Data**: 12 London veterinary clinic locations (clinics.json)
+
+## Mapsi API Endpoints to Use
+Base URL: `https://api.mapsi.dev/v1`
+
+**Required integrations:**
+1. **Tiles** (raster): `/tiles/{z}/{x}/{y}.png` - for map display
+2. **Geocoding** (search): `/geocode/search?q={query}` - address search & autocomplete
+3. **Routing**: `/route?points={lat,lng|lat,lng}&overview=full` - turn-by-turn directions
+4. **Matrix**: `/matrix?sources={lat,lng}&destinations={lat,lng}` - drive-time calculations
+5. **Isochrone**: `/isochrone?location={lat,lng}&time={seconds}` - coverage zones
+
+API Key: Use `process.env.NEXT_PUBLIC_MAPSI_API_KEY` or `import.meta.env.PUBLIC_MAPSI_API_KEY`
+
+## Core Features to Build (Week 1-3)
+### Week 1: Foundation
+- Interactive map with 12 clinic markers (Leaflet + Mapsi tiles)
+- Search bar with Mapsi geocoding (postcode/address lookup)
+- "Use My Location" button (browser geolocation)
+- Nearest 3 clinics display (Haversine distance calculation)
+- Routing feature ("Get Directions" with turn-by-turn)
+
+### Week 2: Advanced
+- Coverage zones (GeoJSON polygons OR Mapsi isochrone API)
+- Booking form address autocomplete
+- Point-in-polygon validation (Turf.js) for coverage check
+- Mapsi Matrix API for accurate drive-time ranking
+- Mini static map preview
+
+### Week 3: Polish
+- Performance optimization (caching, lazy loading)
+- Mobile-first responsive design
+- Cross-browser testing
+- Lighthouse score >90
+
+## Development Workflow
+1. **Work on feature branches**: `feature/map-display`, `feature/routing`, etc.
+2. **Never push directly to `main`** - client has branch protection
+3. **Create PR when ready** - Vercel auto-deploys preview URL
+4. **Client reviews preview** - merge only after approval
+5. **Commits**: Clear messages like "Add Leaflet map with Mapsi tiles and clinic markers"
+
+## File Structure Conventions
+/app (or /src/routes for SvelteKit)
+/page.js (or +page.svelte)
+/locations/page.js
+/booking/page.js
+/components
+/MapDisplay.jsx
+/SearchBar.jsx
+/ClinicCard.jsx
+/lib or /utils
+/mapsi.js - API wrapper functions
+/geo.js - Distance calculations, point-in-polygon
+/public
+/clinics.json - 12 clinic locations
+/coverage-zones.geojson
+
+
+
+
+## Key Constraints
+- **No Google Maps API** - everything must use Mapsi
+- **No Mapbox GL** - use Leaflet.js (simpler, free)
+- **Mapsi infrastructure must be hidden** - don't expose tile server details in frontend
+- **Global audience** - avoid UK-specific units/assumptions in code comments
+- **Cost efficiency** - prefer client-side calculations (Haversine) over API calls when possible
+
+## Design Guidelines
+- Clean, professional B2B SaaS aesthetic (not playful pet-themed)
+- Mapsi branding colors: #2563eb (primary blue), #1e40af (dark blue)
+- Mobile-first: 380px+ viewport support
+- Accessible: WCAG AA minimum
+
+## What NOT to Do
+- Don't use `npm install` for packages not already in package.json without asking
+- Don't create backend API routes for simple operations (do client-side when possible)
+- Don't over-engineer - this is a demo/reference, not production scale
+- Don't add analytics, tracking, or third-party scripts without explicit request
+- Don't use localStorage for Mapsi API key (use environment variables)
+
+## Testing & Quality
+- Before each commit: check console for errors, test on mobile viewport
+- Preview URL must work before creating PR
+- No broken links, no 404s on images/assets
+- All API calls must have error handling
+
+## Questions to Ask Before Implementing
+1. Is this feature in the Week 1-3 scope? (Check CSV project plan if unsure)
+2. Can this be done client-side instead of API call?
+3. Does this require a new dependency, or can we use existing tools?
+4. Will this work on mobile (touch events, viewport size)?
+
+## Example Mapsi API Usage
+```javascript
+// Geocoding search
+const response = await fetch(
+  `https://api.mapsi.dev/v1/geocode/search?q=${encodeURIComponent(query)}&api_key=${apiKey}`
+);
+const data = await response.json();
+
+// Routing
+const response = await fetch(
+  `https://api.mapsi.dev/v1/route?points=${startLat},${startLng}|${endLat},${endLng}&overview=full&api_key=${apiKey}`
+);
+```
+
+## Current Branch Strategy
+- `main`: production (client controls merges)
+- `foundation`: initial setup (Week 1 Day 1)
+- `feature/*`: specific features
+- `week1-*`, `week2-*`: weekly milestone branches
+
+## Contact
+If blocked on Mapsi API specifics, infrastructure questions, or scope clarifications - ask before proceeding. Client (MagnetRock) reviews are async via PR comments.
+
