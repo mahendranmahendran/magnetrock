@@ -101,9 +101,9 @@ export default function LocationsPage() {
       try {
         const params = new URLSearchParams({
           origin_lat: String(userLocation[0]),
-          origin_lng: String(userLocation[1]),
+          origin_lon: String(userLocation[1]),
           dest_lat: String(clinic.lat),
-          dest_lng: String(clinic.lng),
+          dest_lon: String(clinic.lng),
         });
         const res = await fetch(`/api/directions?${params}`);
         const data = await res.json();
@@ -148,7 +148,7 @@ export default function LocationsPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Enter your postcode or area (e.g., NW1, Camden)"
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900 bg-white"
               />
               <button
                 type="submit"

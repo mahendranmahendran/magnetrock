@@ -49,9 +49,9 @@ git commit -m "Add interactive map with Mapsi tiles and 12 clinic markers"
 ### **Step 4: Push to Your Feature Branch**
 ```bash
 # Push to GitHub (creates preview deployment)
-git push origin foundation
+git push origin week1
 
-# Or if you're on a different branch:
+# Or if you're on a different branch, replace week1 with your branch name:
 git push origin feature/map-display
 ```
 
@@ -61,15 +61,20 @@ git push origin feature/map-display
 
 **First push of a new branch:**
 1. Go to: `https://github.com/mahendranmahendran/magnetrock`
-2. You'll see yellow banner: "foundation had recent pushes"
+2. You'll see yellow banner: "week1 had recent pushes"
 3. Click **"Compare & pull request"**
 4. Add title and description
 5. Click **"Create pull request"**
 
-**Subsequent pushes to same branch:**
-- GitHub automatically updates the existing PR
-- No need to create new PR
-- Just push, and the PR updates
+**Subsequent pushes to same branch (most common case):**
+
+No extra steps needed on GitHub — just run the same three commands again:
+```bash
+git add .
+git commit -m "Your description of what you changed"
+git push origin week1
+```
+GitHub sees the push to the existing branch and automatically updates the open PR. The Vercel bot will post a new preview URL comment within ~2 minutes.
 
 ---
 
@@ -113,7 +118,7 @@ git add .
 git commit -m "Add Leaflet map with Mapsi tiles"
 
 # 5. Push
-git push origin foundation
+git push origin week1
 
 # 6. Go to GitHub, create/check PR, copy preview URL
 

@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   const apiKey = process.env.NEXT_PUBLIC_MAPSI_API_KEY;
   if (!apiKey) return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
 
-  const url = `https://api.mapsi.dev/v1/geocode/search?q=${encodeURIComponent(q)}&limit=5`;
+  const url = `https://mapsi.dev/v1/geocode?q=${encodeURIComponent(q)}&limit=5`;
   const res = await fetch(url, { headers: { 'X-API-Key': apiKey } });
 
   if (!res.ok) {
@@ -15,5 +15,13 @@ export async function GET(request: NextRequest) {
   }
 
   const data = await res.json();
-  return NextResponse.json(data);
+
+  // Normalize Mapsi's { coordinates: { lat, lon } } to flat { lat, lon } for the frontend
+  const results = (data.results ?? []).map((r: { coordinates: { lat: number; lon: number }; formatted_address: string }) => ({
+    lat: r.coordinates.lat,
+    lon: r.coordinates.lon,
+    formatted_address: r.formatted_address,
+  }));
+
+  return NextResponse.json({ results });
 }
