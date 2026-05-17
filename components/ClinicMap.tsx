@@ -50,9 +50,28 @@ export default function ClinicMap({
       const maplibregl = (await import('maplibre-gl')).default;
       if (destroyed || !containerRef.current) return;
 
+      // Fetch the Mapsi style server-side then rewrite tile URLs to our throttled proxy
+      const styleRes = await fetch(`/api/tiles/styles?style=light`);
+      const style = await styleRes.json();
+
+      // Replace every Mapsi tile URL in sources with our /api/tiles/... proxy path
+      for (const src of Object.values(style.sources ?? {}) as Record<string, unknown>[]) {
+        if (Array.isArray(src.tiles)) {
+          src.tiles = (src.tiles as string[]).map((t: string) =>
+            t.replace(/^https:\/\/mapsi\.dev\/v1\/tiles\//, '/api/tiles/')
+             .replace(/[?&]key=[^&]+/, '')
+          );
+        }
+        if (typeof src.url === 'string') {
+          src.url = src.url
+            .replace(/^https:\/\/mapsi\.dev\/v1\/tiles\//, '/api/tiles/')
+            .replace(/[?&]key=[^&]+/, '');
+        }
+      }
+
       const map = new maplibregl.Map({
         container: containerRef.current,
-        style: `https://mapsi.dev/v1/tiles/styles?style=light&key=${process.env.NEXT_PUBLIC_MAPSI_API_KEY}`,
+        style,
         center: [-0.1278, 51.5074],
         zoom: 11,
       });
