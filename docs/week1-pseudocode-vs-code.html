@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Week 1 — Pseudocode vs React Code</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/typescript.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      background: #f6f8fa;
+      color: #1f2328;
+      padding: 24px 16px 60px;
+    }
+
+    header {
+      max-width: 1400px;
+      margin: 0 auto 28px;
+    }
+    header h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    header p  { color: #57606a; font-size: 13px; }
+    .skipped  {
+      display: inline-block;
+      margin-top: 8px;
+      background: #fff8c5;
+      border: 1px solid #d4a72c;
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 12px;
+      color: #633c00;
+    }
+
+    /* ── table wrapper ── */
+    .table-wrap {
+      max-width: 1400px;
+      margin: 0 auto;
+      border: 1px solid #d0d7de;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+    }
+
+    /* ── header row ── */
+    thead tr {
+      background: #f0f6ff;
+    }
+    thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: #57606a;
+      border-bottom: 2px solid #d0d7de;
+    }
+    thead th:nth-child(1) { width: 14%; }
+    thead th:nth-child(2) { width: 34%; border-left: 1px solid #d0d7de; }
+    thead th:nth-child(3) { width: 52%; border-left: 1px solid #d0d7de; }
+
+    /* ── body rows ── */
+    tbody tr {
+      border-bottom: 1px solid #e6eaef;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f9fbff; }
+
+    td {
+      padding: 14px 14px;
+      vertical-align: top;
+      line-height: 1.5;
+    }
+    td:nth-child(2) { border-left: 1px solid #e6eaef; }
+    td:nth-child(3) { border-left: 1px solid #e6eaef; }
+
+    /* ── file/concept label (col 1) ── */
+    .file-cell code {
+      display: inline-block;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      background: #eff2f5;
+      border: 1px solid #d0d7de;
+      border-radius: 4px;
+      padding: 2px 6px;
+      color: #0550ae;
+      word-break: break-all;
+    }
+    .concept-label {
+      display: block;
+      margin-top: 7px;
+      font-size: 11.5px;
+      color: #57606a;
+      font-style: italic;
+      line-height: 1.4;
+    }
+
+    /* ── code blocks ── */
+    pre {
+      margin: 0;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 12.5px;
+      line-height: 1.55;
+    }
+    pre code.hljs {
+      padding: 12px 14px;
+      border-radius: 6px;
+    }
+
+    /* pseudocode column gets a warm tint */
+    .pseudo-cell pre code.hljs {
+      background: #fffbf0;
+      border: 1px solid #e6d9b0;
+    }
+
+    /* ── react concept callout ── */
+    .concept-box {
+      margin-top: 10px;
+      padding: 8px 11px;
+      background: #f0fff4;
+      border-left: 3px solid #22863a;
+      border-radius: 0 6px 6px 0;
+      font-size: 12.5px;
+      color: #1a3c29;
+      line-height: 1.5;
+    }
+    .concept-box strong { color: #22863a; }
+
+    /* ── quick reference table ── */
+    .ref-section {
+      max-width: 1400px;
+      margin: 36px auto 0;
+    }
+    .ref-section h2 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .ref-table-wrap {
+      border: 1px solid #d0d7de;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+    .ref-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+    }
+    .ref-table thead th {
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: #57606a;
+      background: #f0f6ff;
+      border-bottom: 2px solid #d0d7de;
+      text-align: left;
+    }
+    .ref-table tbody tr { border-bottom: 1px solid #e6eaef; }
+    .ref-table tbody tr:last-child { border-bottom: none; }
+    .ref-table tbody tr:hover { background: #f9fbff; }
+    .ref-table td { padding: 9px 14px; font-size: 13px; vertical-align: top; }
+    .ref-table td:first-child {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      color: #0550ae;
+      white-space: nowrap;
+      width: 22%;
+    }
+    .ref-table td:nth-child(2) { border-left: 1px solid #e6eaef; color: #57606a; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Week 1 — Pseudocode vs React Code</h1>
+  <p>Side-by-side reference. Each row maps one concept from the pseudocode to the real code that implements it.</p>
+  <span class="skipped">Skipped: <code>data/clinics.json</code>, <code>.gitignore</code>, <code>globals.css</code>, <code>package.json</code> — no React concepts there.</span>
+</header>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>File / Concept</th>
+        <th>Pseudocode</th>
+        <th>React / TypeScript Code</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- haversine.ts -->
+      <tr>
+        <td class="file-cell">
+          <code>lib/haversine.ts</code>
+        </td>
+        <td class="pseudo-cell">
+<pre><code class="language-plaintext">FUNCTION haversineKm(lat1, lng1, lat2, lng2):
+  dLat = (lat2 - lat1) in radians
+  dLng = (lng2 - lng1) in radians
+  a = sin²(dLat/2) + cos(lat1)
+      × cos(lat2) × sin²(dLng/2)
+  c = 2 × atan2(√a, √(1−a))
+  RETURN Earth_radius_km × c</code></pre>
+        </td>
+        <td>
+<pre><code class="language-typescript">const R = 6371; // km
+
+export function haversineKm(
+  lat1: number, lng1: number,
+  lat2: number, lng2: number
+): number {
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) *
+    Math.cos(toRad(lat2)) *
+    Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(
+    Math.sqrt(a), Math.sqrt(1 - a)
+  );
+}
+
+function toRad(deg: number) {
+  return (deg * Math.PI) / 180;
+}</code></pre>
+          <div class="concept-box"><strong>React concept:</strong> Pure TypeScript utility — no React here. Exported and imported wherever distance is needed.</div>
+        </td>
+      </tr>
+
+      <!-- ClinicMap Props -->
+      <tr>
+        <td class="file-cell">
+          <code>components/ClinicMap.tsx</code>
+          <span class="concept-label">Props definition</span>
+        </td>
+        <td class="pseudo-cell">
+<pre><code class="language-plaintext">PROPS ACCEPTED:
+  clinics       → array of clinic objects
+  userLocation  → [lat, lng] (optional)
+  highlightIds  → clinic IDs to highlight
+  routeGeoJSON  → route shape (optional)
+  onGetDirections → callback function</code></pre>
+        </td>
+        <td>
+<pre><code class="language-typescript">type Props = {
+  clinics: Clinic[];
+  userLocation?: [number, number] | null;
+  highlightIds?: number[];
+  routeGeoJSON?: object | null;
+  onGetDirections?: (clinic: Clinic) => void;
+};
+
+export default function ClinicMap({
+  clinics,
+  userLocation,
+  highlightIds = [],
+  routeGeoJSON,
+  onGetDirections,
+}: Props) { ... }</code></pre>
+          <div class="concept-box"><strong>React concept:</strong> Typing props with TypeScript. <code>?</code> marks optional props. Default values go in the destructure (<code>highlightIds = []</code>).</div>
+        </td>
+      </tr>
+
+      <!-- useRef -->
+      <tr>
+        <td class="file-cell">
+          <code>components/ClinicMap.tsx</code>
+          <span class="concept-label">Storing map instance across renders</span>
+        </td>
+        <td class="pseudo-cell">
+<pre><code class="language-plaintext">INTERNAL REFS (persist across renders,
+               don't trigger re-render):
+  map instance
+  array of clinic markers
+  user location marker
+  flag: route layer ready?</code></pre>
+        </td>
+        <td>
+<pre><code class="language-typescript">const containerRef = useRef&lt;HTMLDivElement&gt;(null);
+const mapRef       = useRef&lt;MaplibreMap | null&gt;(null);
+const clinicMarkersRef = useRef&lt;MarkerEntry[]&gt;([]);
+const userMarkerRef    = useRef&lt;MaplibreMarker | null&gt;(null);
+const routeReadyRef    = useRef(false);</code></pre>
+          <div class="concept-box"><strong>React concept:</strong> <code>useRef</code> stores a mutable value that survives re-renders without causing them. Perfect for DOM nodes and third-party library instances like a map object.</div>
+        </td>
+      </tr>
+
+      <!-- Map init -->
+      <tr>
+        <td class="file-cell">
+          <code>components/ClinicMap.tsx</code>
+          <span class="concept-label">Map initialisation (runs once on mount)</span>
+        </td>
+        <td class="pseudo-cell">
+<pre><code class="language-plaintext">ON FIRST RENDER (runs once, browser only):
+  load map library dynamically
+  create map centred on London, zoom 11
+  add tile layer with API key
+  add empty route source + line layer</code></pre>
+        </td>
+        <td>
+<pre><code class="language-typescript">useEffect(() => {
+  if (!containerRef.current || mapRef.current) return;
+
+  (async () => {
+    const maplibregl = (await import('maplibre-gl')).default;
+
+    const styleRes = await fetch(`/api/tiles/styles?style=light`);
+    const style = await styleRes.json();
+
+    const map = new maplibregl.Map({
+      container: containerRef.current,
+      style,
+      center: [-0.1278, 51.5074], // London
+      zoom: 11,
+    });
+    mapRef.current = map;
+
+    map.on('load', () => {
+      map.addSource('route', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      });
+      map.addLayer({
+        id: 'route', type: 'line', source: 'route',
+        paint: { 'line-color': '#059669', 'line-width': 5 },
+      });
+    });
+  })();
+
+  return () => {           // ← cleanup on unmount
+    mapRef.current?.remove();
+    mapRef.current = null;
+  };
+}, []); // ← empty array = run once</code></pre>
+          <div class="concept-box"><strong>React concept:</strong> <code>useEffect</code> with an empty dependency array <code>[]</code> runs exactly once after the first render — equivalent to "on mount". The returned function is the cleanup, called on unmount.</div>
+        </td>
+      </tr>
+
+      <!-- Clinic markers -->
+      <tr>
+        <td class="file-cell">
+          <code>components/ClinicMap.tsx</code>
+          <span class="concept-label">Placing clinic markers with popups</span>
+        </td>
+        <td class="pseudo-cell">
+<pre><code class="language-plaintext">for each active clinic:
+  create a green dot marker at [lat, lng]
+  attach popup: name, address, phone,
+    hours, "Get Directions" button
+  add marker to map</code></pre>
+        </td>
+        <td>
+<pre><code class="language-typescript">clinics
+  .filter((c) => c.status === 'active')
+  .forEach((clinic) => {
+    const el = document.createElement('div');
+    el.style.cssText = `
+      width:14px; height:14px;
+      background:#059669;
+      border:2px solid white;
+      border-radius:50%;
+    `;
+
+    const popup = new maplibregl.Popup({ offset: 10 })
+      .setHTML(`
+        &lt;b&gt;${clinic.name}&lt;/b&gt;&lt;br&gt;
+        ${clinic.address}&lt;br&gt;
+        ${clinic.phone}&lt;br&gt;
+        ${clinic.hours}
+        &lt;button onclick="window.dispatchEvent(
+          new CustomEvent('mapsi:directions',
+          {detail:${clinic.id}}))"&gt;
+          Get Directions
+        &lt;/button&gt;
+      `);
+
+    const marker = new maplibregl.Marker({ element: el })
+      .setLngLat([clinic.lng, clinic.lat])
+      .setPopup(popup)
+      .addTo(map);
+
+    clinicMarkersRef.current.push({ id: clinic.id, marker, el });
+  });</code></pre>
+          <div class="concept-box"><strong>React concept:</strong> The popup button can't call a React function directly (it's raw HTML). Instead it fires a <code>CustomEvent</code> on <code>window</code>; a separate <code>useEffect</code> listens for it and bridges back into React.</div>
+        </td>
+      </tr>
+
+      <!-- Custom event bridge -->
+      <tr>
+        <td class="file-cell">
+          <code>components/ClinicMap.tsx</code>
+          <span class="concept-label">Bridging popup button → React callback</span>
+        </td>
+        <td class="pseudo-cell">
+<pre><code class="language-plaintext">Popup "Get Directions" button fires a
+custom browser event.
+React listens for that event and calls
+the onGetDirections callback prop.</code></pre>
+        </td>
+        <td>
+<pre><code class="language-typescript">useEffect(() => {
+  if (!onGetDirections) return;
+
+  const handler = (e: Event) => {
+    const id = (e as CustomEvent&lt;number&gt;).detail;
+    const clinic = clinics.find((c) => c.id === id);
+    if (clinic) onGetDirections(clinic);
+  };
+
+  window.addEventListener('mapsi:directions', handler);
+  return () => window.removeEventListener('mapsi:directions', handler);
+}, [clinics, onGetDirections]);</code></pre>
+          <div class="concept-box"><strong>React concept:</strong> Always clean up event listeners in the <code>useEffect</code> return function — the old handler stacks up every re-render if you don't. The dependency array <code>[clinics, onGetDirections]</code> re-runs this effect when those values change.</div>
+        </td>
+      </tr>
+
+      <!-- Highlight -->
+      <tr>
+        <td class="file-cell">
+          <code>components/ClinicMap.tsx</code>
+          <span class="concept-label">Updating marker colours when nearest clinics change</span>
+        </td>
+        <td class="pseudo-cell">
+<pre><code class="language-plaintext">WHEN highlightIds CHANGES:
+  for each clinic marker:
+    if clinic.id in highlightIds
+      → set colour to bright emerald
+    else
+      → set colour to standard green</code></pre>
+        </td>
+        <td>
+<pre><code class="language-typescript">function clinicColor(highlighted: boolean) {
+  return highlighted ? '#0d9488' : '#059669';
+}
+
+useEffect(() => {
+  clinicMarkersRef.current.forEach(({ id, el }) => {
+    el.style.background = clinicColor(
+      highlightIds.includes(id)
+    );
+  });
+}, [highlightIds]); // ← re-runs when highlightIds changes</code></pre>
+          <div class="concept-box"><strong>React concept:</strong> The dependency array controls <em>when</em> an effect re-runs. Listing <code>[highlightIds]</code> means "re-run every time the parent passes a new list of IDs". The DOM update (<code>.style.background</code>) is imperative because it targets a MapLibre element, not React's virtual DOM.</div>
+        </td>
+      </tr>
+
+      <!-- User location -->
+      <tr>
+        <td class="file-cell">
+          <code>components/ClinicMap.tsx</code>
+          <span class="concept-label">Placing / moving the user location dot</span>
+        </td>
+        <td class="pseudo-cell">
+<pre><code class="language-plaintext">WHEN userLocation CHANGES:
+  remove old user marker (if any)
+  place blue dot marker at userLocation
+  smoothly pan map to userLocation, zoom 13</code></pre>
+        </td>
+        <td>
+<pre><code class="language-typescript">useEffect(() => {
+  if (!mapRef.current) return;
+  (async () => {
+    const maplibregl = (await import('maplibre-gl')).default;
+    userMarkerRef.current?.remove();   // remove old
+    userMarkerRef.current = null;
+    if (!userLocation) return;
+
+    const el = document.createElement('div');
+    el.style.cssText =
+      'width:16px;height:16px;background:#3B82F6;' +
+      'border:2px solid white;border-radius:50%;';
+
+    userMarkerRef.current = new maplibregl.Marker({ element: el })
+      .setLngLat([userLocation[1], userLocation[0]])
+      .addTo(mapRef.current);
+
+    mapRef.current.flyTo({
+      center: [userLocation[1], userLocation[0]],
+      zoom: 13,
+      duration: 1000,
+    });
+  })();
+}, [userLocation]);</code></pre>
+          <div class="concept-box"><strong>React concept:</strong> Each effect can respond to a specific piece of state. This one watches only <code>userLocation</code> — it won't re-run when <code>highlightIds</code> changes. The optional-chain <code>?.remove()</code> safely handles the case where no previous marker exists.</div>
+        </td>
+      </tr>
+
+      <!-- Route polyline -->
+      <tr>
+        <td class="file-cell">
+          <code>components/ClinicMap.tsx</code>
+          <span class="concept-label">Drawing the route polyline</span>
+        </td>
+        <td class="pseudo-cell">
+<pre><code class="language-plaintext">WHEN routeGeoJSON CHANGES:
+  if null → clear route layer
+  else:
+    push GeoJSON into the route source
+    zoom map to fit full route</code></pre>
+        </td>
+        <td>
+<pre><code class="language-typescript">useEffect(() => {
+  if (!mapRef.current || !routeReadyRef.current) return;
+  const source = mapRef.current.getSource('route') as any;
+  if (!source) return;
+
+  if (!routeGeoJSON) {
+    source.setData({ type: 'FeatureCollection', features: [] });
+    return;
+  }
+
+  source.setData(routeGeoJSON);  // map redraws automatically
+
+  (async () => {
+    const maplibregl = (await import('maplibre-gl')).default;
+    const fc = routeGeoJSON as {
+      features?: Array&lt;{ geometry?: { coordinates?: [number,number][] } }&gt;
+    };
+    const coords = fc.features?.[0]?.geometry?.coordinates;
+    if (coords?.length) {
+      const bounds = coords.reduce(
+        (b, c) => b.extend(c as [number, number]),
+        new maplibregl.LngLatBounds(coords[0] as [number,number], coords[0] as [number,number])
+      );
+      mapRef.current!.fitBounds(bounds, { padding: 40 });
+    }
+  })();
+}, [routeGeoJSON]);</code></pre>
+          <div class="concept-box"><strong>React concept:</strong> <code>routeReadyRef.current</code> guards against trying to update the route source before the map's <code>load</code> event has fired. State triggers re-renders; refs hold flags that should not.</div>
+        </td>
+      </tr>
+
+      <!-- State declarations -->
+      <tr>
+        <td class="file-cell">
+          <code>app/locations/page.tsx</code>
+          <span class="concept-label">State declarations</span>
+        </td>
+        <td class="pseudo-cell">
+<pre><code class="language-plaintext">STATE:
+  searchQuery   → text in the search input
+  userLocation  → [lat, lng] once located
+  nearest       → top-3 closest clinics
+  routeGeoJSON  → route data for the map
+  routingClinic → name of clinic being fetched</code></pre>
+        </td>
+        <td>
+<pre><code class="language-typescript">const [searchQuery,   setSearchQuery]   = useState('');
+const [searching,     setSearching]     = useState(false);
+const [searchError,   setSearchError]   = useState('');
+const [userLocation,  setUserLocation]  = useState&lt;[number, number] | null&gt;(null);
+const [nearest,       setNearest]       = useState&lt;NearestClinic[]&gt;([]);
+const [routeGeoJSON,  setRouteGeoJSON]  = useState&lt;object | null&gt;(null);
+const [routingClinic, setRoutingClinic] = useState&lt;string&gt;('');
+const [locating,      setLocating]      = useState(false);</code></pre>
+          <div class="concept-box"><strong>React concept:</strong> Each <code>useState</code> call returns <code>[currentValue, setter]</code>. Calling the setter triggers a re-render. TypeScript generics (<code>useState&lt;[number,number] | null&gt;</code>) tell React what shape the value can be.</div>
+        </td>
+      </tr>
+
+      <!-- computeNearest -->
+      <tr>
+        <td class="file-cell">
+          <code>app/locations/page.tsx</code>
+          <span class="concept-label">Computing 3 nearest clinics</span>
+        </td>
+        <td class="pseudo-cell">
+<pre><code class="language-plaintext">FUNCTION computeNearest(lat, lng):
+  for each clinic:
+    calculate haversineKm distance
+  sort by distance ascending
+  keep top 3
+  save to nearest state</code></pre>
+        </td>
+        <td>
+<pre><code class="language-typescript">function computeNearest(lat: number, lng: number) {
+  const ranked = clinics
+    .map((c) => ({
+      ...c,
+      distanceKm: haversineKm(lat, lng, c.lat, c.lng),
+    }))
+    .sort((a, b) => a.distanceKm - b.distanceKm)
+    .slice(0, 3);
+
+  setNearest(ranked);
+}</code></pre>
+          <div class="concept-box"><strong>React concept:</strong> <code>...c</code> is the spread operator — it copies all clinic fields then adds <code>distanceKm</code>. Calling <code>setNearest(ranked)</code> stores the new array in state, which re-renders the nearest-clinics panel automatically.</div>
+        </td>
+      </tr>
+
+      <!-- handleSearch -->
+      <tr>
+        <td class="file-cell">
+          <code>app/locations/page.tsx</code>
+          <span class="concept-label">Address search (form submit)</span>
+        </td>
+        <td class="pseudo-cell">
+<pre><code class="language-plaintext">FUNCTION handleSearch (form submit):
+  call GET /api/geocode?q=searchQuery
+  get first result's lat/lon
+  set userLocation to [lat, lon]
+  call computeNearest(lat, lon)</code></pre>
+        </td>
+        <td>
+<pre><code class="language-typescript">async function handleSearch(e: React.FormEvent) {
+  e.preventDefault();          // stop page reload
+  if (!searchQuery.trim()) return;
+  setSearching(true);
+  setSearchError('');
+
+  try {
+    const res = await fetch(
+      `/api/geocode?q=${encodeURIComponent(searchQuery)}`
+    );
+    const data = await res.json();
+
+    const results: Array&lt;{ lat: number; lon: number }&gt; =
+      data.results ?? [];
+
+    if (!results.length) {
+      setSearchError('No results found.');
+      return;
+    }
+
+    const { lat, lon } = results[0];
+    setUserLocation([lat, lon]);
+    computeNearest(lat, lon);
+  } catch {
+    setSearchError('Search failed. Please try again.');
+  } finally {
+    setSearching(false);       // always reset loading flag
+  }
+}</code></pre>
+          <div class="concept-box"><strong>React concept:</strong> <code>async</code> event handlers work fine in React. <code>try/catch/finally</code> gives clean error and loading-state management. <code>e.preventDefault()</code> is essential on form submits to prevent the browser from reloading the page.</div>
+        </td>
+      </tr>
+
+      <!-- handleUseMyLocation -->
+      <tr>
+        <td class="file-cell">
+          <code>app/locations/page.tsx</code>
+          <span class="concept-label">GPS "Use My Location"</span>
+        </td>
+        <td class="pseudo-cell">
+<pre><code class="language-plaintext">FUNCTION handleUseMyLocation:
+  ask browser for GPS coordinates
+  on success → set userLocation,
+               call computeNearest
+  on failure → show error message</code></pre>
+        </td>
+        <td>
+<pre><code class="language-typescript">function handleUseMyLocation() {
+  if (!navigator.geolocation) {
+    setSearchError('Geolocation not supported.');
+    return;
+  }
+  setLocating(true);
+
+  navigator.geolocation.getCurrentPosition(
+    ({ coords }) => {                   // success callback
+      const loc: [number, number] = [
+        coords.latitude, coords.longitude
+      ];
+      setUserLocation(loc);
+      computeNearest(coords.latitude, coords.longitude);
+      setLocating(false);
+    },
+    () => {                             // error callback
+      setSearchError('Could not get location.');
+      setLocating(false);
+    }
+  );
+}</code></pre>
+          <div class="concept-box"><strong>React concept:</strong> The browser's Geolocation API uses old-school callbacks (not Promises). You still call React state setters inside those callbacks — React doesn't mind; it batches and schedules the re-render.</div>
+        </td>
+      </tr>
+
+      <!-- handleGetDirections -->
+      <tr>
+        <td class="file-cell">
+          <code>app/locations/page.tsx</code>
+          <span class="concept-label">Fetching a route (directions)</span>
+        </td>
+        <td class="pseudo-cell">
+<pre><code class="language-plaintext">FUNCTION handleGetDirections (clinic):
+  if no userLocation → show error
+  call GET /api/directions?origin=...&dest=...
+  receive GeoJSON route shape
+  save to routeGeoJSON state
+  (map draws it automatically)</code></pre>
+        </td>
+        <td>
+<pre><code class="language-typescript">const handleGetDirections = useCallback(
+  async (clinic: Clinic) => {
+    if (!userLocation) {
+      setSearchError('Search your address first.');
+      return;
+    }
+    setRoutingClinic(clinic.name);
+    setRouteGeoJSON(null);
+
+    try {
+      const params = new URLSearchParams({
+        origin_lat: String(userLocation[0]),
+        origin_lon: String(userLocation[1]),
+        dest_lat:   String(clinic.lat),
+        dest_lon:   String(clinic.lng),
+      });
+      const res  = await fetch(`/api/directions?${params}`);
+      const data = await res.json();
+      setRouteGeoJSON(data);       // ClinicMap reacts automatically
+    } catch {
+      setSearchError('Could not load directions.');
+    } finally {
+      setRoutingClinic('');
+    }
+  },
+  [userLocation]   // recreate only when userLocation changes
+);</code></pre>
+          <div class="concept-box"><strong>React concept:</strong> <code>useCallback</code> memoises the function so it isn't recreated on every render — important here because <code>handleGetDirections</code> is passed as a prop to <code>ClinicMap</code>, and a new function reference on every render would cause the map's <code>useEffect</code> to re-run needlessly.</div>
+        </td>
+      </tr>
+
+      <!-- Render -->
+      <tr>
+        <td class="file-cell">
+          <code>app/locations/page.tsx</code>
+          <span class="concept-label">Conditional rendering + passing state to map</span>
+        </td>
+        <td class="pseudo-cell">
+<pre><code class="language-plaintext">RENDER:
+  search bar (calls handleSearch)
+  "Use My Location" button
+  IF nearest is not empty:
+    nearest-clinics panel (3 cards)
+  &lt;ClinicMap
+    clinics, userLocation,
+    highlightIds, routeGeoJSON,
+    onGetDirections
+  /&gt;</code></pre>
+        </td>
+        <td>
+<pre><code class="language-typescript">{/* Nearest Clinics Panel — only shown after a search */}
+{nearest.length > 0 && (
+  &lt;section&gt;
+    {nearest.map((clinic, i) => (
+      &lt;div key={clinic.id}&gt;
+        &lt;span&gt;{i + 1}&lt;/span&gt;
+        &lt;h4&gt;{clinic.name}&lt;/h4&gt;
+        &lt;p&gt;{clinic.distanceKm.toFixed(1)} km&lt;/p&gt;
+        &lt;button onClick={() => handleGetDirections(clinic)}&gt;
+          Directions
+        &lt;/button&gt;
+      &lt;/div&gt;
+    ))}
+  &lt;/section&gt;
+)}
+
+{/* Map — always rendered, reacts to prop changes */}
+&lt;ClinicMap
+  clinics={clinics}
+  userLocation={userLocation}
+  highlightIds={nearest.map((c) => c.id)}
+  routeGeoJSON={routeGeoJSON}
+  onGetDirections={handleGetDirections}
+/&gt;</code></pre>
+          <div class="concept-box"><strong>React concept:</strong> <code>{condition && &lt;Component /&gt;}</code> is the standard conditional render pattern. <code>array.map()</code> with a <code>key</code> prop renders lists. Data flows <em>down</em> via props; events flow <em>up</em> via callback props (<code>onGetDirections</code>).</div>
+        </td>
+      </tr>
+
+      <!-- geocode route -->
+      <tr>
+        <td class="file-cell">
+          <code>app/api/geocode/route.ts</code>
+          <span class="concept-label">Server-side geocoding proxy</span>
+        </td>
+        <td class="pseudo-cell">
+<pre><code class="language-plaintext">ENDPOINT: GET /api/geocode?q={address}
+
+VALIDATE:
+  if q missing → 400
+  if API key missing → 500
+
+CALL MAPSI:
+  fetch geocode API with key in header
+
+RETURN:
+  normalised { results: [{lat, lon}] }</code></pre>
+        </td>
+        <td>
+<pre><code class="language-typescript">import { NextRequest, NextResponse } from 'next/server';
+
+export async function GET(request: NextRequest) {
+  const q = request.nextUrl.searchParams.get('q');
+  if (!q)
+    return NextResponse.json({ error: 'Missing q' }, { status: 400 });
+
+  const apiKey = process.env.NEXT_PUBLIC_MAPSI_API_KEY;
+  if (!apiKey)
+    return NextResponse.json({ error: 'No API key' }, { status: 500 });
+
+  const url =
+    `https://mapsi.dev/v1/geocode?q=${encodeURIComponent(q)}&limit=5`;
+  const res = await fetch(url, { headers: { 'X-API-Key': apiKey } });
+
+  if (!res.ok)
+    return NextResponse.json({ error: 'Geocoding failed' }, { status: res.status });
+
+  const data = await res.json();
+
+  const results = (data.results ?? []).map(
+    (r: { coordinates: { lat: number; lon: number }; formatted_address: string }) => ({
+      lat: r.coordinates.lat,
+      lon: r.coordinates.lon,
+      formatted_address: r.formatted_address,
+    })
+  );
+
+  return NextResponse.json({ results });
+}</code></pre>
+          <div class="concept-box"><strong>Next.js concept:</strong> Exporting a named <code>GET</code> function from <code>app/api/.../route.ts</code> creates a server-side API endpoint. The API key lives in <code>process.env</code> — the browser never sees it. <code>NextResponse.json()</code> is the standard way to return JSON with a status code.</div>
+        </td>
+      </tr>
+
+      <!-- directions route -->
+      <tr>
+        <td class="file-cell">
+          <code>app/api/directions/route.ts</code>
+          <span class="concept-label">Server-side routing proxy</span>
+        </td>
+        <td class="pseudo-cell">
+<pre><code class="language-plaintext">ENDPOINT: GET /api/directions?
+            origin_lat&origin_lon&
+            dest_lat&dest_lon
+
+VALIDATE: all 4 coords present + API key
+
+CALL MAPSI routing API
+
+RETURN:
+  GeoJSON FeatureCollection
+  (ClinicMap draws as green polyline)</code></pre>
+        </td>
+        <td>
+<pre><code class="language-typescript">export async function GET(request: NextRequest) {
+  const { searchParams } = request.nextUrl;
+  const originLat = searchParams.get('origin_lat');
+  const originLon = searchParams.get('origin_lon');
+  const destLat   = searchParams.get('dest_lat');
+  const destLon   = searchParams.get('dest_lon');
+
+  if (!originLat || !originLon || !destLat || !destLon)
+    return NextResponse.json({ error: 'Missing coords' }, { status: 400 });
+
+  const apiKey = process.env.NEXT_PUBLIC_MAPSI_API_KEY;
+  if (!apiKey)
+    return NextResponse.json({ error: 'No API key' }, { status: 500 });
+
+  const url = `https://mapsi.dev/v1/route?` +
+    `origin_lat=${originLat}&origin_lon=${originLon}` +
+    `&dest_lat=${destLat}&dest_lon=${destLon}`;
+
+  const res = await fetch(url, { headers: { 'X-API-Key': apiKey } });
+
+  if (!res.ok)
+    return NextResponse.json({ error: 'Routing failed' }, { status: res.status });
+
+  const data = await res.json();
+
+  // Wrap Mapsi's LineString in a GeoJSON FeatureCollection
+  // so MapLibre's setData() accepts it directly
+  return NextResponse.json({
+    type: 'FeatureCollection',
+    features: [{ type: 'Feature', geometry: data.polyline, properties: {} }],
+  });
+}</code></pre>
+          <div class="concept-box"><strong>Next.js concept:</strong> Both API routes follow the same pattern: validate → fetch external API with secret key → normalise the response shape → return JSON. The browser calls <code>/api/directions</code>, never <code>mapsi.dev</code> directly — so the API key is never exposed.</div>
+        </td>
+      </tr>
+
+    </tbody>
+  </table>
+</div>
+
+<!-- Quick Reference -->
+<div class="ref-section">
+  <h2>React Patterns Quick Reference</h2>
+  <div class="ref-table-wrap">
+    <table class="ref-table">
+      <thead>
+        <tr>
+          <th>Pattern</th>
+          <th>Where used in this project</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>useState</td><td>Every piece of UI state in <code>locations/page.tsx</code> (query, location, nearest, route)</td></tr>
+        <tr><td>useEffect with []</td><td>Map initialisation in <code>ClinicMap.tsx</code> — runs once on mount</td></tr>
+        <tr><td>useEffect with deps</td><td>Highlight colours, user dot, route line — each watches one piece of state</td></tr>
+        <tr><td>useRef</td><td>Storing the map/marker instances without triggering re-renders</td></tr>
+        <tr><td>useCallback</td><td>Memoising <code>handleGetDirections</code> so it doesn't recreate on every render</td></tr>
+        <tr><td>{condition && &lt;JSX&gt;}</td><td>Showing the nearest-clinics panel only after a search</td></tr>
+        <tr><td>array.map() + key</td><td>Rendering the nearest-clinics cards and the full clinic grid</td></tr>
+        <tr><td>Props down / callbacks up</td><td><code>ClinicMap</code> receives data as props; reports user actions via <code>onGetDirections</code></td></tr>
+        <tr><td>Dynamic import</td><td><code>import('maplibre-gl')</code> inside an effect — loads only in the browser, avoids SSR crash</td></tr>
+        <tr><td>async GET route export</td><td>Next.js App Router API routes in <code>app/api/**/route.ts</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    hljs.configure({ ignoreUnescapedHTML: true });
+    hljs.highlightAll();
+  });
+</script>
+</body>
+</html>

@@ -58,14 +58,14 @@ export default function ClinicMap({
       for (const src of Object.values(style.sources ?? {}) as Record<string, unknown>[]) {
         if (Array.isArray(src.tiles)) {
           src.tiles = (src.tiles as string[]).map((t: string) =>
-            t.replace(/^https:\/\/mapsi\.dev\/v1\/tiles\//, '/api/tiles/')
-             .replace(/[?&]key=[^&]+/, '')
+            t.replace(/https?:\/\/[^/]*mapsi\.dev(?:\/v\d+)?\/tiles\//, '/api/tiles/')
+             .replace(/[?&]key=[^&]+/g, '')
           );
         }
         if (typeof src.url === 'string') {
           src.url = src.url
-            .replace(/^https:\/\/mapsi\.dev\/v1\/tiles\//, '/api/tiles/')
-            .replace(/[?&]key=[^&]+/, '');
+            .replace(/https?:\/\/[^/]*mapsi\.dev(?:\/v\d+)?\/tiles\//, '/api/tiles/')
+            .replace(/[?&]key=[^&]+/g, '');
         }
       }
 
@@ -74,6 +74,21 @@ export default function ClinicMap({
         style,
         center: [-0.1278, 51.5074],
         zoom: 11,
+        // Intercept every request MapLibre makes — tiles, TileJSON, glyphs — so nothing
+        // ever reaches mapsi.dev directly from the browser (which would be CORS-blocked).
+        transformRequest: (url: string) => {
+          if (!url.includes('mapsi.dev')) return { url };
+          const match = url.match(/https?:\/\/[^/]*mapsi\.dev(?:\/v\d+)?\/tiles\/([^?]*)/);
+          if (!match) return { url };
+          const tilePath = match[1].replace(/\/$/, '');
+          let queryString = '';
+          try {
+            const params = new URL(url).searchParams;
+            params.delete('key');
+            queryString = params.toString();
+          } catch { /* ignore malformed URLs */ }
+          return { url: `/api/tiles/${tilePath}${queryString ? `?${queryString}` : ''}` };
+        },
       });
       mapRef.current = map;
 
