@@ -1,9 +1,28 @@
-// app/booking/page.tsx - Book Appointment
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import dynamic from 'next/dynamic';
+import { useState, useRef, useCallback } from 'react';
 import { Header, Footer } from '../page';
+import { ZONE_STYLES } from '@/components/CoverageLayer';
+
+const ClinicMiniMap = dynamic(() => import('@/components/ClinicMiniMap'), { ssr: false });
+
+type ZoneKey = keyof typeof ZONE_STYLES;
+
+type CoverageResult = {
+  zone: ZoneKey | null;
+  label: string;
+  fee: number;
+  currency: string;
+  note: string;
+};
+
+type Suggestion = {
+  lat: number;
+  lon: number;
+  formatted_address: string;
+};
 
 export default function BookingPage() {
   const [formData, setFormData] = useState({
@@ -13,8 +32,47 @@ export default function BookingPage() {
     address: '',
     phone: '',
     reason: '',
-    preferredDate: ''
+    preferredDate: '',
   });
+
+  // Autocomplete + coverage check state
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [coverageResult, setCoverageResult] = useState<CoverageResult | null>(null);
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const fetchSuggestions = useCallback(async (q: string) => {
+    if (q.length < 3) { setSuggestions([]); return; }
+    try {
+      const res = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      setSuggestions(data.results ?? []);
+      setShowSuggestions(true);
+    } catch { setSuggestions([]); }
+  }, []);
+
+  function handleAddressChange(value: string) {
+    setFormData((f) => ({ ...f, address: value }));
+    setCoverageResult(null);
+    setUserLocation(null);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => fetchSuggestions(value), 320);
+  }
+
+  async function selectSuggestion(s: Suggestion) {
+    setFormData((f) => ({ ...f, address: s.formatted_address }));
+    setShowSuggestions(false);
+    setSuggestions([]);
+    const loc: [number, number] = [s.lat, s.lon];
+    setUserLocation(loc);
+
+    try {
+      const res = await fetch(`/api/coverage?lat=${s.lat}&lon=${s.lon}`);
+      const data: CoverageResult = await res.json();
+      setCoverageResult(data);
+    } catch { /* coverage check failed silently */ }
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,21 +149,36 @@ export default function BookingPage() {
                     required
                   />
                 </div>
-                <div>
+                <div className="relative">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Address (for home visit check)
                   </label>
                   <input
                     type="text"
                     value={formData.address}
-                    onChange={(e) => setFormData({...formData, address: e.target.value})}
-                    placeholder="Start typing your address..."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                    onChange={(e) => handleAddressChange(e.target.value)}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                    onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                    placeholder="Start typing your postcode or address…"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    autoComplete="off"
                     required
                   />
-                  <p className="text-sm text-gray-500 mt-1">
-                    💡 Address autocomplete will go here (Mapsi Geocoding API)
-                  </p>
+                  {showSuggestions && suggestions.length > 0 && (
+                    <ul className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
+                      {suggestions.map((s, i) => (
+                        <li key={i}>
+                          <button
+                            type="button"
+                            onMouseDown={() => selectSuggestion(s)}
+                            className="w-full text-left px-4 py-2 text-sm hover:bg-emerald-50 text-gray-800"
+                          >
+                            {s.formatted_address}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -123,17 +196,43 @@ export default function BookingPage() {
               </div>
             </div>
 
-            {/* ZONE CHECK PLACEHOLDER */}
-            <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6">
-              <div className="text-center">
-                <div className="text-4xl mb-2">📍</div>
-                <h4 className="font-bold text-lg mb-2">Home Visit Availability</h4>
-                <p className="text-sm text-gray-600">
-                  Zone validation will check if address is within home visit coverage<br/>
-                  (Turf.js point-in-polygon check)
-                </p>
+            {/* Coverage check result + mini-map */}
+            {!coverageResult && !userLocation && (
+              <div className="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-4 text-center text-sm text-gray-500">
+                Enter your address above to check home visit availability
               </div>
-            </div>
+            )}
+
+            {coverageResult && (
+              <div
+                className={`rounded-lg border-2 p-4 ${
+                  coverageResult.zone && coverageResult.zone !== 'outer'
+                    ? 'border-emerald-400 bg-emerald-50'
+                    : 'border-amber-400 bg-amber-50'
+                }`}
+              >
+                <div className="flex items-start gap-3 mb-3">
+                  <span className="text-2xl">
+                    {coverageResult.zone && coverageResult.zone !== 'outer' ? '✅' : '⚠️'}
+                  </span>
+                  <div>
+                    <p className="font-semibold text-gray-900">{coverageResult.note}</p>
+                    {coverageResult.fee > 0 && (
+                      <p className="text-sm text-gray-700 mt-0.5">
+                        Home visit fee: <strong>{coverageResult.currency}{coverageResult.fee}</strong>
+                        {' '}<span className="text-gray-500">({coverageResult.label})</span>
+                      </p>
+                    )}
+                  </div>
+                </div>
+                {userLocation && (
+                  <ClinicMiniMap
+                    userLocation={userLocation}
+                    zone={coverageResult.zone}
+                  />
+                )}
+              </div>
+            )}
 
             {/* Appointment Details */}
             <div className="bg-white border border-gray-200 rounded-lg p-6">

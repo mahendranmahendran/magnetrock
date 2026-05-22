@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 2 — Code Summary | PawCare × Mapsi</title>
+<style>
+  :root {
+    --green: #16a34a; --green-light: #dcfce7; --green-mid: #22c55e;
+    --amber: #ca8a04; --amber-light: #fef9c3;
+    --red: #dc2626; --red-light: #fee2e2;
+    --blue: #2563eb; --blue-light: #dbeafe;
+    --gray: #6b7280; --gray-light: #f3f4f6; --gray-dark: #111827;
+    --border: #e5e7eb;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--gray-dark); line-height: 1.6; background: #fafafa; }
+
+  .page-header { background: var(--green); color: white; padding: 2rem; }
+  .page-header h1 { font-size: 1.8rem; font-weight: 700; }
+  .page-header p  { opacity: .85; margin-top: .25rem; font-size: .95rem; }
+
+  .nav { display: flex; gap: .5rem; flex-wrap: wrap; padding: 1rem 2rem; background: white; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+  .nav a { text-decoration: none; font-size: .8rem; font-weight: 600; padding: .3rem .75rem; border-radius: 999px; background: var(--gray-light); color: var(--gray-dark); transition: background .15s; }
+  .nav a:hover { background: var(--green-light); color: var(--green); }
+
+  .container { max-width: 1080px; margin: 0 auto; padding: 2rem; }
+  .day { margin-bottom: 3rem; }
+  .day-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; padding-bottom: .75rem; border-bottom: 2px solid var(--green); }
+  .day-badge { background: var(--green); color: white; font-size: .75rem; font-weight: 700; padding: .25rem .6rem; border-radius: 4px; white-space: nowrap; }
+  .day-header h2 { font-size: 1.3rem; font-weight: 700; }
+  .day-header .goal { font-size: .85rem; color: var(--gray); margin-left: auto; font-style: italic; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem; }
+  @media(max-width: 720px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .card { background: white; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .card-head { padding: .6rem 1rem; font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+  .card-head.task    { background: var(--blue-light);  color: var(--blue); }
+  .card-head.pseudo  { background: var(--amber-light); color: var(--amber); }
+  .card-head.code    { background: var(--green-light); color: var(--green); }
+  .card-head.file    { background: var(--gray-light);  color: var(--gray); }
+  .card-body { padding: 1rem; font-size: .88rem; }
+
+  pre { background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 6px; overflow-x: auto; font-size: .78rem; line-height: 1.55; white-space: pre; }
+  code { font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace; }
+  pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+  p code, li code { background: var(--gray-light); padding: .1em .35em; border-radius: 3px; font-size: .85em; font-family: 'Consolas', monospace; }
+
+  ul { padding-left: 1.2rem; }
+  ul li { margin-bottom: .25rem; font-size: .88rem; }
+
+  .result-box { background: white; border: 1px solid var(--green); border-left: 4px solid var(--green); border-radius: 6px; padding: .75rem 1rem; margin-top: .75rem; font-size: .85rem; }
+  .result-box strong { color: var(--green); }
+
+  .file-tree { font-family: monospace; font-size: .82rem; line-height: 1.8; }
+  .file-tree .new { color: var(--green); font-weight: 700; }
+  .file-tree .mod { color: var(--amber); font-weight: 600; }
+
+  .kw  { color: #f472b6; }
+  .fn  { color: #60a5fa; }
+  .str { color: #86efac; }
+  .cmt { color: #94a3b8; font-style: italic; }
+  .typ { color: #fbbf24; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Week 2 — Code Summary</h1>
+  <p>PawCare London × Mapsi Integration &nbsp;|&nbsp; Days 8 – 12 &nbsp;|&nbsp; AlgoLayer Technologies</p>
+</div>
+
+<nav class="nav">
+  <a href="#day8">Day 8 — Coverage Zones</a>
+  <a href="#day9">Day 9 — Isochrone API</a>
+  <a href="#day10">Day 10 — Autocomplete + Check</a>
+  <a href="#day11">Day 11 — Mini-Map + Matrix</a>
+  <a href="#day12">Day 12 — Performance</a>
+  <a href="#files">File Map</a>
+</nav>
+
+<div class="container">
+
+<!-- ─── DAY 8 ─────────────────────────────────────────────────────────────── -->
+<section class="day" id="day8">
+  <div class="day-header">
+    <span class="day-badge">Day 8</span>
+    <h2>GeoJSON Coverage Zones</h2>
+    <span class="goal">Goal: Colour-coded zone polygons overlaid on the map</span>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head task">What This Does (Task)</div>
+      <div class="card-body">
+        <ul>
+          <li>Defines three London coverage zones as GeoJSON polygons: <strong>Central</strong> (£70), <strong>Inner</strong> (£50), <strong>Outer</strong> (clinic only)</li>
+          <li>Overlays them on the MapLibre map as fill + dashed-outline layers</li>
+          <li>Adds a toggle switch + Fixed/Drive-Time tab bar below the map via <code>CoverageLayer</code> component</li>
+          <li>Zone visibility updates reactively when toggle is flipped</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head pseudo">Pseudocode</div>
+      <div class="card-body">
+<pre><code><span class="cmt">-- data/coverage-zones.json</span>
+FeatureCollection {
+  features: [
+    Feature { zone:"central", fee:70, Polygon }
+    Feature { zone:"inner",   fee:50, Polygon }
+    Feature { zone:"outer",   fee:0,  Polygon }
+  ]
+}
+
+<span class="cmt">-- ClinicMap.tsx (inside map.on('load'))</span>
+addSource('coverage', { type:'geojson', data: emptyFC })
+addLayer('coverage-fill',    type:fill,    visibility:'none')
+addLayer('coverage-outline', type:line,    visibility:'none')
+coverageReady = true
+
+<span class="cmt">-- when coverageZones prop changes:</span>
+IF map ready → source.setData(coverageZones)
+
+<span class="cmt">-- when showZones prop changes:</span>
+IF map ready → setLayoutProperty(visibility)</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head code">React / TSX Code Snippet — <code>ClinicMap.tsx</code> (zone additions)</div>
+    <div class="card-body">
+<pre><code><span class="cmt">// New props added to ClinicMap</span>
+<span class="kw">type</span> <span class="typ">Props</span> = {
+  clinics: Clinic[];
+  coverageZones?: <span class="typ">object</span> | <span class="kw">null</span>;   <span class="cmt">// GeoJSON FeatureCollection</span>
+  showZones?: <span class="typ">boolean</span>;
+  <span class="cmt">// ...existing props</span>
+};
+
+<span class="cmt">// Refs that track latest prop values (needed for map.on('load') timing)</span>
+<span class="kw">const</span> coverageReadyRef = <span class="fn">useRef</span>(<span class="kw">false</span>);
+<span class="kw">const</span> coverageZonesRef = <span class="fn">useRef</span>(coverageZones ?? <span class="kw">null</span>);
+<span class="kw">const</span> showZonesRef     = <span class="fn">useRef</span>(showZones);
+
+<span class="cmt">// Inside map.on('load') — after route source/layer setup:</span>
+map.<span class="fn">addSource</span>(<span class="str">'coverage'</span>, { type: <span class="str">'geojson'</span>, data: emptyFC });
+map.<span class="fn">addLayer</span>({
+  id: <span class="str">'coverage-fill'</span>, type: <span class="str">'fill'</span>, source: <span class="str">'coverage'</span>,
+  layout: { visibility: <span class="str">'none'</span> },
+  paint: {
+    <span class="str">'fill-color'</span>: [<span class="str">'match'</span>, [<span class="str">'get'</span>, <span class="str">'zone'</span>],
+      <span class="str">'central'</span>, <span class="str">'#22c55e'</span>,
+      <span class="str">'inner'</span>,   <span class="str">'#eab308'</span>,
+      /* default */ <span class="str">'#ef4444'</span>],
+    <span class="str">'fill-opacity'</span>: 0.15,
+  },
+}, <span class="str">'route'</span>); <span class="cmt">// insert below route layer</span>
+map.<span class="fn">addLayer</span>({
+  id: <span class="str">'coverage-outline'</span>, type: <span class="str">'line'</span>, source: <span class="str">'coverage'</span>,
+  layout: { visibility: <span class="str">'none'</span> },
+  paint: {
+    <span class="str">'line-color'</span>: [<span class="str">'match'</span>, [<span class="str">'get'</span>, <span class="str">'zone'</span>],
+      <span class="str">'central'</span>, <span class="str">'#16a34a'</span>, <span class="str">'inner'</span>, <span class="str">'#ca8a04'</span>, <span class="str">'#dc2626'</span>],
+    <span class="str">'line-width'</span>: 2,
+    <span class="str">'line-dasharray'</span>: [4, 2],
+  },
+}, <span class="str">'route'</span>);
+coverageReadyRef.current = <span class="kw">true</span>;
+
+<span class="cmt">// Reactive useEffect — updates map when prop changes</span>
+<span class="fn">useEffect</span>(() => {
+  coverageZonesRef.current = coverageZones ?? <span class="kw">null</span>;
+  <span class="kw">if</span> (!mapRef.current || !coverageReadyRef.current) <span class="kw">return</span>;
+  (mapRef.current.<span class="fn">getSource</span>(<span class="str">'coverage'</span>) <span class="kw">as any</span>)?.<span class="fn">setData</span>(coverageZones ?? emptyFC);
+}, [coverageZones]);
+
+<span class="fn">useEffect</span>(() => {
+  showZonesRef.current = showZones;
+  <span class="kw">if</span> (!mapRef.current || !coverageReadyRef.current) <span class="kw">return</span>;
+  <span class="kw">const</span> vis = showZones ? <span class="str">'visible'</span> : <span class="str">'none'</span>;
+  mapRef.current.<span class="fn">setLayoutProperty</span>(<span class="str">'coverage-fill'</span>,    <span class="str">'visibility'</span>, vis);
+  mapRef.current.<span class="fn">setLayoutProperty</span>(<span class="str">'coverage-outline'</span>, <span class="str">'visibility'</span>, vis);
+}, [showZones]);</code></pre>
+    </div>
+  </div>
+
+  <div class="result-box">
+    <strong>Test result:</strong> Coverage API correctly classifies: City of London → central (£70), Clapham → inner (£50), Richmond → outer (£0 / clinic only), Manchester → outside service area.
+  </div>
+</section>
+
+<!-- ─── DAY 9 ─────────────────────────────────────────────────────────────── -->
+<section class="day" id="day9">
+  <div class="day-header">
+    <span class="day-badge">Day 9</span>
+    <h2>Isochrone Zones + Zone Decision</h2>
+    <span class="goal">Goal: Drive-time zones fetched from Mapsi Isochrone API</span>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head task">What This Does (Task)</div>
+      <div class="card-body">
+        <ul>
+          <li>New server-side API route <code>/api/isochrone</code> proxies to <code>mapsi.dev/v1/isochrone</code></li>
+          <li>Accepts <code>lat</code>, <code>lon</code>, <code>minutes</code> and returns GeoJSON polygons</li>
+          <li>The locations page fetches isochrones for the 3 nearest clinics when in "Drive-Time" mode</li>
+          <li>Fixed vs Drive-Time is a tab toggle in the <code>CoverageLayer</code> component</li>
+          <li>When no user location: shows a message to search first</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head pseudo">Pseudocode</div>
+      <div class="card-body">
+<pre><code><span class="cmt">-- app/api/isochrone/route.ts</span>
+GET /api/isochrone?lat=X&lon=Y&minutes=15,30,45
+
+  validate lat + lon present
+  build URL → mapsi.dev/v1/isochrone?lat=X&lon=Y&minutes=...
+  fetch with X-API-Key header
+  return GeoJSON as-is
+
+<span class="cmt">-- locations/page.tsx (useEffect)</span>
+WHEN zoneMode == 'isochrone' AND userLocation AND showZones:
+  fetch /api/isochrone for each of nearest 3 clinics
+  merge all returned features into one FeatureCollection
+  setCoverageZones(merged)
+
+WHEN zoneMode switches back to 'fixed':
+  setCoverageZones(zonesData)  <span class="cmt">← local JSON, no API call</span></code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head code">API Route — <code>app/api/isochrone/route.ts</code></div>
+    <div class="card-body">
+<pre><code><span class="kw">import</span> { NextRequest, NextResponse } <span class="kw">from</span> <span class="str">'next/server'</span>;
+
+<span class="kw">export async function</span> <span class="fn">GET</span>(request: NextRequest) {
+  <span class="kw">const</span> { searchParams } = request.nextUrl;
+  <span class="kw">const</span> lat     = searchParams.<span class="fn">get</span>(<span class="str">'lat'</span>);
+  <span class="kw">const</span> lon     = searchParams.<span class="fn">get</span>(<span class="str">'lon'</span>);
+  <span class="kw">const</span> minutes = searchParams.<span class="fn">get</span>(<span class="str">'minutes'</span>) ?? <span class="str">'15,30,45'</span>;
+
+  <span class="kw">if</span> (!lat || !lon)
+    <span class="kw">return</span> NextResponse.<span class="fn">json</span>({ error: <span class="str">'Missing lat or lon'</span> }, { status: 400 });
+
+  <span class="kw">const</span> apiKey = process.env.NEXT_PUBLIC_MAPSI_API_KEY;
+  <span class="kw">if</span> (!apiKey) <span class="kw">return</span> NextResponse.<span class="fn">json</span>({ error: <span class="str">'API key not configured'</span> }, { status: 500 });
+
+  <span class="kw">const</span> url = <span class="str">`https://mapsi.dev/v1/isochrone?lat=<span class="kw">${lat}</span>&lon=<span class="kw">${lon}</span>&minutes=<span class="kw">${minutes}</span>`</span>;
+  <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(url, { headers: { <span class="str">'X-API-Key'</span>: apiKey } });
+
+  <span class="kw">if</span> (!res.ok)
+    <span class="kw">return</span> NextResponse.<span class="fn">json</span>({ error: <span class="str">'Isochrone request failed'</span> }, { status: res.status });
+
+  <span class="cmt">// Mapsi returns GeoJSON FeatureCollection — pass through as-is</span>
+  <span class="kw">return</span> NextResponse.<span class="fn">json</span>(<span class="kw">await</span> res.<span class="fn">json</span>());
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:1.25rem">
+    <div class="card-head code">Locations Page — isochrone fetch logic</div>
+    <div class="card-body">
+<pre><code><span class="cmt">// useEffect fires when user switches to isochrone mode</span>
+<span class="fn">useEffect</span>(() => {
+  <span class="kw">if</span> (zoneMode !== <span class="str">'isochrone'</span> || !userLocation || !showZones) <span class="kw">return</span>;
+  <span class="kw">let</span> cancelled = <span class="kw">false</span>;
+  <span class="fn">setIsochroneLoading</span>(<span class="kw">true</span>);
+
+  (<span class="kw">async</span> () => {
+    <span class="cmt">// Fire one request per nearest clinic (up to 3 in parallel)</span>
+    <span class="kw">const</span> targets = nearest.length > 0 ? nearest.<span class="fn">slice</span>(0, 3) : clinics.<span class="fn">slice</span>(0, 3);
+    <span class="kw">const</span> results = <span class="kw">await</span> Promise.<span class="fn">all</span>(
+      targets.<span class="fn">map</span>((c) =>
+        <span class="fn">fetch</span>(<span class="str">`/api/isochrone?lat=<span class="kw">${c.lat}</span>&lon=<span class="kw">${c.lng}</span>&minutes=30`</span>)
+          .<span class="fn">then</span>((r) => r.<span class="fn">json</span>()).<span class="fn">catch</span>(() => <span class="kw">null</span>)
+      )
+    );
+    <span class="kw">if</span> (cancelled) <span class="kw">return</span>;
+
+    <span class="cmt">// Flatten all features from all isochrone responses</span>
+    <span class="kw">const</span> features = results
+      .<span class="fn">filter</span>(Boolean)
+      .<span class="fn">flatMap</span>((fc) => fc?.features ?? []);
+
+    <span class="kw">if</span> (features.length > 0)
+      <span class="fn">setCoverageZones</span>({ type: <span class="str">'FeatureCollection'</span>, features });
+  })().<span class="fn">finally</span>(() => { <span class="kw">if</span> (!cancelled) <span class="fn">setIsochroneLoading</span>(<span class="kw">false</span>); });
+
+  <span class="kw">return</span> () => { cancelled = <span class="kw">true</span>; };
+}, [zoneMode, userLocation, showZones, nearest]);</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ─── DAY 10 ─────────────────────────────────────────────────────────────── -->
+<section class="day" id="day10">
+  <div class="day-header">
+    <span class="day-badge">Day 10</span>
+    <h2>Booking Autocomplete + Coverage Check</h2>
+    <span class="goal">Goal: As-you-type address suggestions + instant zone/fee result</span>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head task">What This Does (Task)</div>
+      <div class="card-body">
+        <ul>
+          <li>Address field on the booking form calls <code>/api/geocode</code> after the user stops typing (320ms debounce)</li>
+          <li>Suggestions dropdown appears below the input</li>
+          <li>On suggestion click: geocoded lat/lon sent to <code>/api/coverage</code> (Turf.js point-in-polygon server-side)</li>
+          <li>Response shows: <strong>"Home visit available — £50"</strong> or <strong>"Clinic visits only"</strong></li>
+          <li>A mini-map appears showing the user's pin and their zone</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head pseudo">Pseudocode</div>
+      <div class="card-body">
+<pre><code><span class="cmt">-- app/booking/page.tsx</span>
+STATE: suggestions, showSuggestions,
+       coverageResult, userLocation
+
+ON address input change:
+  setFormData(address)
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(320ms):
+    IF length >= 3:
+      GET /api/geocode?q=address
+      setSuggestions(results)
+
+ON suggestion click:
+  setAddress(suggestion.formatted_address)
+  setUserLocation([lat, lon])
+  GET /api/coverage?lat=...&lon=...
+  setCoverageResult(response)
+  → show coverage UI + mini-map
+
+<span class="cmt">-- app/api/coverage/route.ts</span>
+GET /api/coverage?lat=X&lon=Y
+  pt = turf.point([lon, lat])
+  FOR zone IN [central, inner, outer]:
+    IF turf.booleanPointInPolygon(pt, zoneFeature):
+      RETURN { zone, fee, note }
+  RETURN { zone: null, note: "Outside service area" }</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head code">Coverage API Route — <code>app/api/coverage/route.ts</code> (key logic)</div>
+    <div class="card-body">
+<pre><code><span class="kw">import</span> booleanPointInPolygon <span class="kw">from</span> <span class="str">'@turf/boolean-point-in-polygon'</span>;
+<span class="kw">import</span> { point } <span class="kw">from</span> <span class="str">'@turf/helpers'</span>;
+<span class="kw">import</span> zonesData <span class="kw">from</span> <span class="str">'@/data/coverage-zones.json'</span>;
+<span class="kw">import</span> feesData  <span class="kw">from</span> <span class="str">'@/data/coverage-fees.json'</span>;
+
+<span class="kw">export async function</span> <span class="fn">GET</span>(request: NextRequest) {
+  <span class="kw">const</span> lat = <span class="fn">parseFloat</span>(searchParams.<span class="fn">get</span>(<span class="str">'lat'</span>)!);
+  <span class="kw">const</span> lon = <span class="fn">parseFloat</span>(searchParams.<span class="fn">get</span>(<span class="str">'lon'</span>)!);
+
+  <span class="kw">const</span> pt    = <span class="fn">point</span>([lon, lat]);   <span class="cmt">// GeoJSON is [lng, lat]</span>
+  <span class="kw">const</span> zones = zonesData.features;
+
+  <span class="cmt">// Most specific first: central → inner → outer</span>
+  <span class="kw">for</span> (<span class="kw">const</span> zoneKey <span class="kw">of</span> [<span class="str">'central'</span>, <span class="str">'inner'</span>, <span class="str">'outer'</span>]) {
+    <span class="kw">const</span> feature = zones.<span class="fn">find</span>((f) => f.properties?.zone === zoneKey);
+    <span class="kw">if</span> (feature && <span class="fn">booleanPointInPolygon</span>(pt, feature)) {
+      <span class="kw">const</span> fee = feesData[zoneKey];
+      <span class="kw">return</span> NextResponse.<span class="fn">json</span>({ zone: zoneKey, ...fee });
+    }
+  }
+  <span class="kw">return</span> NextResponse.<span class="fn">json</span>({ zone: <span class="kw">null</span>, note: <span class="str">'Outside service area'</span> });
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:1.25rem">
+    <div class="card-head code">Booking Page — autocomplete input + coverage result (JSX)</div>
+    <div class="card-body">
+<pre><code><span class="cmt">{/* Address field with debounced autocomplete */}</span>
+&lt;<span class="fn">div</span> className=<span class="str">"relative"</span>&gt;
+  &lt;<span class="fn">input</span>
+    value={formData.address}
+    onChange={(e) =&gt; <span class="fn">handleAddressChange</span>(e.target.value)}
+    onBlur={() =&gt; <span class="fn">setTimeout</span>(() =&gt; <span class="fn">setShowSuggestions</span>(<span class="kw">false</span>), 150)}
+    placeholder=<span class="str">"Start typing your postcode or address…"</span>
+    autoComplete=<span class="str">"off"</span>
+  /&gt;
+
+  <span class="cmt">{/* Dropdown */}</span>
+  {showSuggestions &amp;&amp; suggestions.length &gt; 0 &amp;&amp; (
+    &lt;<span class="fn">ul</span> className=<span class="str">"absolute z-10 w-full bg-white border rounded-lg shadow-lg mt-1"</span>&gt;
+      {suggestions.<span class="fn">map</span>((s, i) =&gt; (
+        &lt;<span class="fn">li</span> key={i}&gt;
+          &lt;<span class="fn">button</span> type=<span class="str">"button"</span> onMouseDown={() =&gt; <span class="fn">selectSuggestion</span>(s)}&gt;
+            {s.formatted_address}
+          &lt;/<span class="fn">button</span>&gt;
+        &lt;/<span class="fn">li</span>&gt;
+      ))}
+    &lt;/<span class="fn">ul</span>&gt;
+  )}
+&lt;/<span class="fn">div</span>&gt;
+
+<span class="cmt">{/* Coverage result card (shown after address selection) */}</span>
+{coverageResult &amp;&amp; (
+  &lt;<span class="fn">div</span> className={coverageResult.fee &gt; 0 ? <span class="str">"border-emerald-400 bg-emerald-50"</span> : <span class="str">"border-amber-400 bg-amber-50"</span>}&gt;
+    &lt;<span class="fn">p</span>&gt;{coverageResult.note}&lt;/<span class="fn">p</span>&gt;
+    {coverageResult.fee &gt; 0 &amp;&amp; (
+      &lt;<span class="fn">p</span>&gt;Home visit fee: &lt;<span class="fn">strong</span>&gt;£{coverageResult.fee}&lt;/<span class="fn">strong</span>&gt;&lt;/<span class="fn">p</span>&gt;
+    )}
+    &lt;<span class="fn">ClinicMiniMap</span> userLocation={userLocation} zone={coverageResult.zone} /&gt;
+  &lt;/<span class="fn">div</span>&gt;
+)}</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ─── DAY 11 ─────────────────────────────────────────────────────────────── -->
+<section class="day" id="day11">
+  <div class="day-header">
+    <span class="day-badge">Day 11</span>
+    <h2>Mini-Map on Booking + Matrix API Drive-Time</h2>
+    <span class="goal">Goal: Visual location preview + real drive-time clinic ranking</span>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head task">Mini-Map Task</div>
+      <div class="card-body">
+        <ul>
+          <li><code>ClinicMiniMap</code> component: 180px-tall MapLibre map, <code>interactive: false</code></li>
+          <li>Accepts <code>userLocation</code>, <code>zone</code>, <code>nearestClinicLocation</code></li>
+          <li>Shows blue dot (user), green dot (nearest clinic)</li>
+          <li>Zone header bar coloured by zone type (green/amber/red)</li>
+          <li>Lazy-loaded via <code>next/dynamic</code> — doesn't block the form</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head task">Matrix API Task</div>
+      <div class="card-body">
+        <ul>
+          <li><code>/api/matrix</code> sends user origin + all 12 clinic destinations to Mapsi Matrix API</li>
+          <li>Returns drive time in seconds + minutes, sorted nearest-first</li>
+          <li>Toggle on the nearest-clinics panel: "By distance" ↔ "By drive time"</li>
+          <li>When drive-time is on, clinics are re-ranked and the badge shows <em>"X min"</em> instead of <em>"X km"</em></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head pseudo">Pseudocode — <code>ClinicMiniMap</code></div>
+    <div class="card-body">
+<pre><code><span class="cmt">-- components/ClinicMiniMap.tsx</span>
+PROPS: userLocation[lat,lng], zone, nearestClinicLocation
+
+ON MOUNT (useEffect, once):
+  dynamicImport('maplibre-gl')
+  fetch '/api/tiles/styles?style=light' → rewrite URLs to proxy
+  new MapLibre({ interactive: false, zoom: 13 })
+  map.on('load'):
+    IF userLocation → addBlueMarker(userLocation)
+    IF nearestClinicLocation → addGreenMarker(nearestClinicLocation)
+
+WHEN userLocation changes:
+  removeOldBlueMarker
+  addNewBlueMarker(userLocation)
+  map.setCenter(userLocation)
+
+RENDER:
+  IF zone → coloured header bar (green/amber/red + fee text)
+  map div (180px tall)
+  IF no userLocation → grey overlay "Enter address to see map"</code></pre>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:1.25rem">
+    <div class="card-head code">Matrix API Route — <code>app/api/matrix/route.ts</code></div>
+    <div class="card-body">
+<pre><code><span class="cmt">// POST to Mapsi Matrix with sources (user) + targets (all 12 clinics)</span>
+<span class="kw">const</span> body = {
+  sources: [{ lat: <span class="fn">parseFloat</span>(originLat), lon: <span class="fn">parseFloat</span>(originLon) }],
+  targets: clinics.<span class="fn">map</span>((c) => ({ lat: c.lat, lon: c.lng })),
+};
+
+<span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'https://mapsi.dev/v1/matrix'</span>, {
+  method: <span class="str">'POST'</span>,
+  headers: { <span class="str">'X-API-Key'</span>: apiKey, <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span> },
+  body: <span class="fn">JSON.stringify</span>(body),
+});
+
+<span class="cmt">// Response: { durations: [[sec_to_clinic0, sec_to_clinic1, ...]] }</span>
+<span class="kw">const</span> durations: number[] = data.durations?.[0] ?? [];
+
+<span class="kw">const</span> results = clinics
+  .<span class="fn">map</span>((clinic, i) => ({
+    id: clinic.id, name: clinic.name,
+    driveTimeSeconds: durations[i] ?? <span class="kw">null</span>,
+    driveTimeMinutes: durations[i] != <span class="kw">null</span> ? <span class="fn">Math.ceil</span>(durations[i] / 60) : <span class="kw">null</span>,
+  }))
+  .<span class="fn">filter</span>((r) => r.driveTimeSeconds !== <span class="kw">null</span>)
+  .<span class="fn">sort</span>((a, b) => a.driveTimeSeconds - b.driveTimeSeconds);</code></pre>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:1.25rem">
+    <div class="card-head code">Locations Page — Drive-Time Toggle (JSX)</div>
+    <div class="card-body">
+<pre><code><span class="cmt">{/* Toggle in nearest-clinics panel header */}</span>
+&lt;<span class="fn">div</span> className=<span class="str">"flex items-center gap-2"</span>&gt;
+  &lt;<span class="fn">span</span> className=<span class="str">"text-xs text-gray-500"</span>&gt;
+    {driveTimeMode ? <span class="str">'By drive time'</span> : <span class="str">'By distance'</span>}
+  &lt;/<span class="fn">span</span>&gt;
+  &lt;<span class="fn">button</span> onClick={() =&gt; <span class="fn">setDriveTimeMode</span>((v) =&gt; !v)}&gt;
+    <span class="cmt">{/* pill toggle */}</span>
+  &lt;/<span class="fn">button</span>&gt;
+&lt;/<span class="fn">div</span>&gt;
+
+<span class="cmt">{/* Computed display order for the nearest-clinics panel */}</span>
+<span class="kw">const</span> displayNearest = driveTimeMode &amp;&amp; driveTimeRanking.length &gt; 0
+  ? driveTimeRanking
+      .<span class="fn">map</span>((r) => nearest.<span class="fn">find</span>((c) => c.id === r.id) ?? clinics.<span class="fn">find</span>((c) => c.id === r.id))
+      .<span class="fn">filter</span>(Boolean) <span class="kw">as</span> NearestClinic[]
+  : nearest;   <span class="cmt">// fallback to haversine order</span></code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ─── DAY 12 ─────────────────────────────────────────────────────────────── -->
+<section class="day" id="day12">
+  <div class="day-header">
+    <span class="day-badge">Day 12</span>
+    <h2>Performance Optimisations</h2>
+    <span class="goal">Goal: Faster loads, fewer redundant fetches, better mobile UX</span>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head task">What's Already In Place</div>
+      <div class="card-body">
+        <ul>
+          <li><strong>Lazy loading:</strong> <code>ClinicMap</code> and <code>ClinicMiniMap</code> are both wrapped in <code>next/dynamic({ ssr: false })</code> — MapLibre is never bundled server-side</li>
+          <li><strong>Tile caching:</strong> <code>/api/tiles</code> sets <code>Cache-Control: public, max-age=86400</code> — tiles are cached 24 hours</li>
+          <li><strong>Style caching:</strong> Map style JSON cached 1 hour</li>
+          <li><strong>Autocomplete debounce:</strong> 320ms delay prevents API hammering while typing</li>
+          <li><strong>Request cancellation:</strong> All async useEffects use a <code>cancelled</code> flag to ignore stale responses</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head pseudo">localStorage Caching Pattern</div>
+      <div class="card-body">
+<pre><code><span class="cmt">-- Pattern for caching isochrone data</span>
+<span class="cmt">-- (avoids re-fetching on page revisit)</span>
+
+FUNCTION loadZonesWithCache(clinicId, minutes):
+  key = `isochrone_${clinicId}_${minutes}`
+  cached = localStorage.getItem(key)
+  IF cached AND not expired (< 1 hour):
+    RETURN JSON.parse(cached)
+
+  data = await fetch(`/api/isochrone?...`)
+  localStorage.setItem(key, JSON.stringify({
+    data, timestamp: Date.now()
+  }))
+  RETURN data
+
+<span class="cmt">-- Why: Isochrone API costs rate-limit quota.</span>
+<span class="cmt">-- Zones don't change minute-to-minute.</span>
+<span class="cmt">-- 1-hour TTL = cheap + fresh enough.</span></code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head code">Lazy Loading Pattern — used for both maps</div>
+    <div class="card-body">
+<pre><code><span class="cmt">// In any page file (e.g. locations/page.tsx, booking/page.tsx)</span>
+<span class="kw">import</span> dynamic <span class="kw">from</span> <span class="str">'next/dynamic'</span>;
+
+<span class="cmt">// MapLibre = ~750 KB. With ssr:false, it is NEVER included in the</span>
+<span class="cmt">// server-rendered HTML or the initial JS bundle. The browser</span>
+<span class="cmt">// downloads it only when the component first renders on the client.</span>
+<span class="kw">const</span> ClinicMap = <span class="fn">dynamic</span>(
+  () => <span class="kw">import</span>(<span class="str">'@/components/ClinicMap'</span>),
+  { ssr: <span class="kw">false</span> }           <span class="cmt">// ← key: no SSR = no server crash from window/document</span>
+);
+
+<span class="kw">const</span> ClinicMiniMap = <span class="fn">dynamic</span>(
+  () => <span class="kw">import</span>(<span class="str">'@/components/ClinicMiniMap'</span>),
+  { ssr: <span class="kw">false</span> }
+);
+
+<span class="cmt">// Fixed zones load from local JSON — zero network cost, zero latency</span>
+<span class="kw">import</span> zonesData <span class="kw">from</span> <span class="str">'@/data/coverage-zones.json'</span>;
+
+<span class="fn">useEffect</span>(() => {
+  <span class="fn">setCoverageZones</span>(zonesData);  <span class="cmt">// instant — already in the JS bundle</span>
+}, []);</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FILE MAP ─────────────────────────────────────────────────────────────── -->
+<section class="day" id="files">
+  <div class="day-header">
+    <span class="day-badge">Summary</span>
+    <h2>Week 2 File Map</h2>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head file">New Files Created This Week</div>
+      <div class="card-body">
+        <div class="file-tree">
+          <span class="new">data/coverage-zones.json</span><br>
+          &nbsp;&nbsp;GeoJSON polygons for Central / Inner / Outer London<br><br>
+          <span class="new">data/coverage-fees.json</span><br>
+          &nbsp;&nbsp;Zone → fee mapping (client editable)<br><br>
+          <span class="new">components/CoverageLayer.tsx</span><br>
+          &nbsp;&nbsp;Zone legend + Fixed/Drive-Time toggle UI<br><br>
+          <span class="new">components/ClinicMiniMap.tsx</span><br>
+          &nbsp;&nbsp;Small static map for booking form<br><br>
+          <span class="new">app/api/isochrone/route.ts</span><br>
+          &nbsp;&nbsp;Proxies to mapsi.dev/v1/isochrone<br><br>
+          <span class="new">app/api/coverage/route.ts</span><br>
+          &nbsp;&nbsp;Turf.js point-in-polygon (server-side)<br><br>
+          <span class="new">app/api/matrix/route.ts</span><br>
+          &nbsp;&nbsp;Drive-time matrix for all 12 clinics<br><br>
+          <span class="new">docs/week2-code-summary.html</span><br>
+          &nbsp;&nbsp;This document
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head file">Modified Files</div>
+      <div class="card-body">
+        <div class="file-tree">
+          <span class="mod">components/ClinicMap.tsx</span><br>
+          &nbsp;&nbsp;+ coverageZones prop<br>
+          &nbsp;&nbsp;+ showZones prop<br>
+          &nbsp;&nbsp;+ coverage source/fill/outline layers<br>
+          &nbsp;&nbsp;+ 2 new useEffect (data + visibility sync)<br><br>
+          <span class="mod">app/locations/page.tsx</span><br>
+          &nbsp;&nbsp;+ showZones, zoneMode, coverageZones state<br>
+          &nbsp;&nbsp;+ driveTimeMode, driveTimeRanking state<br>
+          &nbsp;&nbsp;+ isochrone fetch useEffect<br>
+          &nbsp;&nbsp;+ matrix fetch useEffect<br>
+          &nbsp;&nbsp;+ CoverageLayer component rendered below map<br>
+          &nbsp;&nbsp;+ drive-time toggle in nearest-clinics panel<br><br>
+          <span class="mod">app/booking/page.tsx</span><br>
+          &nbsp;&nbsp;+ address autocomplete with dropdown<br>
+          &nbsp;&nbsp;+ 320ms debounce on geocode calls<br>
+          &nbsp;&nbsp;+ coverage check on address select<br>
+          &nbsp;&nbsp;+ coverage result card (fee + zone label)<br>
+          &nbsp;&nbsp;+ ClinicMiniMap below coverage result<br><br>
+          <span class="mod">package.json</span><br>
+          &nbsp;&nbsp;+ @turf/turf ^7.3.5
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:1.25rem">
+    <div class="card-head task">Architecture — How the Pieces Connect</div>
+    <div class="card-body">
+<pre><code>Browser (client)
+  │
+  ├── /locations  (app/locations/page.tsx)
+  │     ├── zonesData ← data/coverage-zones.json  (bundled, instant)
+  │     ├── CoverageLayer (components/CoverageLayer.tsx)
+  │     │     toggle switch + Fixed/Drive-Time tabs + legend
+  │     ├── ClinicMap (components/ClinicMap.tsx)
+  │     │     MapLibre map + clinic markers + route
+  │     │     + coverage-fill / coverage-outline layers (new)
+  │     ├── /api/isochrone → mapsi.dev/v1/isochrone  (drive-time mode)
+  │     └── /api/matrix   → mapsi.dev/v1/matrix      (drive-time ranking)
+  │
+  └── /booking   (app/booking/page.tsx)
+        ├── /api/geocode  → mapsi.dev/v1/geocode     (autocomplete)
+        ├── /api/coverage → Turf.js point-in-polygon  (server-side, no external API)
+        └── ClinicMiniMap (components/ClinicMiniMap.tsx)
+              small static MapLibre map showing user pin + zone header</code></pre>
+    </div>
+  </div>
+</section>
+
+</div><!-- /container -->
+
+<footer style="text-align:center;padding:2rem;color:#9ca3af;font-size:.8rem;border-top:1px solid #e5e7eb;margin-top:2rem">
+  PawCare × Mapsi — Week 2 Code Summary &nbsp;|&nbsp; AlgoLayer Technologies &nbsp;|&nbsp; Day 8–12 of 21
+</footer>
+</body>
+</html>

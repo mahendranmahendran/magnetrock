@@ -2,11 +2,13 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Header, Footer } from '../page';
 import { haversineKm } from '@/lib/haversine';
 import type { Clinic } from '@/components/ClinicMap';
+import CoverageLayer, { type ZoneMode } from '@/components/CoverageLayer';
 import clinicsData from '@/data/clinics.json';
+import zonesData from '@/data/coverage-zones.json';
 
 const ClinicMap = dynamic(() => import('@/components/ClinicMap'), { ssr: false });
 
@@ -23,6 +25,85 @@ export default function LocationsPage() {
   const [routeGeoJSON, setRouteGeoJSON] = useState<object | null>(null);
   const [routingClinic, setRoutingClinic] = useState<string>('');
   const [locating, setLocating] = useState(false);
+
+  // Coverage zones state
+  const [showZones, setShowZones] = useState(false);
+  const [zoneMode, setZoneMode] = useState<ZoneMode>('fixed');
+  const [coverageZones, setCoverageZones] = useState<object | null>(null);
+  const [isochroneLoading, setIsochroneLoading] = useState(false);
+
+  // Drive-time ranking state
+  const [driveTimeMode, setDriveTimeMode] = useState(false);
+  const [driveTimeLoading, setDriveTimeLoading] = useState(false);
+  const [driveTimeRanking, setDriveTimeRanking] = useState<{ id: number; driveTimeMinutes: number }[]>([]);
+
+  // Load fixed zones from local data on mount
+  useEffect(() => {
+    setCoverageZones(zonesData);
+  }, []);
+
+  // Fetch isochrone zones for nearest clinics when user location + isochrone mode is active
+  useEffect(() => {
+    if (zoneMode !== 'isochrone' || !userLocation || !showZones) return;
+    let cancelled = false;
+    setIsochroneLoading(true);
+
+    (async () => {
+      try {
+        // Fetch one isochrone per nearest clinic (up to 3) and merge into a FeatureCollection
+        const targets = nearest.length > 0 ? nearest.slice(0, 3) : clinics.slice(0, 3);
+        const requests = targets.map((c) =>
+          fetch(`/api/isochrone?lat=${c.lat}&lon=${c.lng}&minutes=30`)
+            .then((r) => r.json())
+            .catch(() => null)
+        );
+        const results = await Promise.all(requests);
+        if (cancelled) return;
+
+        const features = results
+          .filter(Boolean)
+          .flatMap((fc: { features?: unknown[] }) => fc?.features ?? []);
+
+        if (features.length > 0) {
+          setCoverageZones({ type: 'FeatureCollection', features });
+        }
+      } finally {
+        if (!cancelled) setIsochroneLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [zoneMode, userLocation, showZones, nearest]);
+
+  // Restore fixed zones when switching back
+  useEffect(() => {
+    if (zoneMode === 'fixed') {
+      setCoverageZones(zonesData);
+    }
+  }, [zoneMode]);
+
+  // Fetch drive-time ranking when drive-time mode toggled on
+  useEffect(() => {
+    if (!driveTimeMode || !userLocation) return;
+    let cancelled = false;
+    setDriveTimeLoading(true);
+
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/matrix?origin_lat=${userLocation[0]}&origin_lon=${userLocation[1]}`
+        );
+        const data = await res.json();
+        if (!cancelled && data.results) {
+          setDriveTimeRanking(data.results.slice(0, 3));
+        }
+      } catch { /* fall back to haversine */ } finally {
+        if (!cancelled) setDriveTimeLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [driveTimeMode, userLocation]);
 
   function computeNearest(lat: number, lng: number) {
     const ranked = clinics
@@ -124,7 +205,17 @@ export default function LocationsPage() {
     [userLocation]
   );
 
-  const highlightIds = nearest.map((c) => c.id);
+  // When drive-time mode is on and we have rankings, reorder nearest by drive time
+  const displayNearest: NearestClinic[] = driveTimeMode && driveTimeRanking.length > 0
+    ? driveTimeRanking
+        .map((r) => {
+          const clinic = nearest.find((c) => c.id === r.id) ?? clinics.find((c) => c.id === r.id);
+          return clinic ? { ...clinic, distanceKm: (r.driveTimeMinutes ?? 0) / 60 } : null;
+        })
+        .filter((c): c is NearestClinic => c !== null)
+    : nearest;
+
+  const highlightIds = displayNearest.map((c) => c.id);
 
   return (
     <div className="min-h-screen bg-white">
@@ -179,20 +270,43 @@ export default function LocationsPage() {
       {nearest.length > 0 && (
         <section className="py-6 bg-emerald-50 border-b">
           <div className="container mx-auto px-4">
-            <h3 className="text-lg font-bold mb-4 text-gray-800">
-              {routingClinic ? `Getting directions to ${routingClinic}…` : '3 Nearest Clinics'}
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-800">
+                {routingClinic ? `Getting directions to ${routingClinic}…` : '3 Nearest Clinics'}
+              </h3>
+              {/* Drive-time toggle */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500">
+                  {driveTimeMode ? 'By drive time' : 'By distance'}
+                </span>
+                <button
+                  onClick={() => setDriveTimeMode((v) => !v)}
+                  disabled={driveTimeLoading}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors disabled:opacity-50 ${
+                    driveTimeMode ? 'bg-emerald-600' : 'bg-gray-300'
+                  }`}
+                  title="Toggle drive-time ranking (Matrix API)"
+                >
+                  <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${driveTimeMode ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
+                </button>
+              </div>
+            </div>
             <div className="grid md:grid-cols-3 gap-4">
-              {nearest.map((clinic, i) => (
+              {displayNearest.map((clinic, i) => (
                 <div key={clinic.id} className="bg-white rounded-lg p-4 shadow-sm border border-emerald-200">
                   <div className="flex items-start justify-between mb-2">
                     <span className="text-xs font-bold text-white bg-emerald-600 rounded-full w-6 h-6 flex items-center justify-center">
                       {i + 1}
                     </span>
                     <span className="text-sm font-semibold text-emerald-700">
-                      {clinic.distanceKm < 1
-                        ? `${Math.round(clinic.distanceKm * 1000)} m`
-                        : `${clinic.distanceKm.toFixed(1)} km`}
+                      {driveTimeMode && driveTimeRanking.length > 0
+                        ? (() => {
+                            const r = driveTimeRanking.find((x) => x.id === clinic.id);
+                            return r ? `${r.driveTimeMinutes} min` : '—';
+                          })()
+                        : clinic.distanceKm < 1
+                          ? `${Math.round(clinic.distanceKm * 1000)} m`
+                          : `${clinic.distanceKm.toFixed(1)} km`}
                     </span>
                   </div>
                   <h4 className="font-bold text-gray-800 text-sm">{clinic.name}</h4>
@@ -229,12 +343,23 @@ export default function LocationsPage() {
             highlightIds={highlightIds}
             routeGeoJSON={routeGeoJSON}
             onGetDirections={handleGetDirections}
+            coverageZones={coverageZones}
+            showZones={showZones}
           />
           {!userLocation && (
             <p className="text-sm text-gray-400 text-center mt-2">
               Search your postcode or use "Use My Location" to find your nearest clinic
             </p>
           )}
+          {/* Zone legend + toggle */}
+          <CoverageLayer
+            visible={showZones}
+            onToggle={() => setShowZones((v) => !v)}
+            zoneMode={zoneMode}
+            onZoneModeChange={setZoneMode}
+            isochroneLoading={isochroneLoading}
+            requiresLocation={!userLocation}
+          />
         </div>
       </section>
 

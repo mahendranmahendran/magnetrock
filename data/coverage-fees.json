@@ -1,0 +1,5 @@
+{
+  "central": { "label": "Central London", "fee": 70, "currency": "£", "note": "Home visit available" },
+  "inner":   { "label": "Inner London",   "fee": 50, "currency": "£", "note": "Home visit available" },
+  "outer":   { "label": "Outer London",   "fee": 0,  "currency": "£", "note": "Clinic visits only — outside coverage area" }
+}

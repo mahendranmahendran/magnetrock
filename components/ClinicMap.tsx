@@ -20,6 +20,8 @@ type Props = {
   highlightIds?: number[];
   routeGeoJSON?: object | null;
   onGetDirections?: (clinic: Clinic) => void;
+  coverageZones?: object | null;
+  showZones?: boolean;
 };
 
 type MarkerEntry = { id: number; marker: MaplibreMarker; el: HTMLDivElement };
@@ -34,12 +36,17 @@ export default function ClinicMap({
   highlightIds = [],
   routeGeoJSON,
   onGetDirections,
+  coverageZones,
+  showZones = false,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MaplibreMap | null>(null);
   const clinicMarkersRef = useRef<MarkerEntry[]>([]);
   const userMarkerRef = useRef<MaplibreMarker | null>(null);
   const routeReadyRef = useRef(false);
+  const coverageReadyRef = useRef(false);
+  const coverageZonesRef = useRef<object | null>(coverageZones ?? null);
+  const showZonesRef = useRef(showZones);
 
   // Initialise map once on mount
   useEffect(() => {
@@ -127,6 +134,35 @@ export default function ClinicMap({
         });
         routeReadyRef.current = true;
 
+        // Coverage zone source + fill + outline (below route)
+        map.addSource('coverage', {
+          type: 'geojson',
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          data: (coverageZonesRef.current ?? { type: 'FeatureCollection', features: [] }) as any,
+        });
+        map.addLayer({
+          id: 'coverage-fill',
+          type: 'fill',
+          source: 'coverage',
+          layout: { visibility: showZonesRef.current ? 'visible' : 'none' },
+          paint: {
+            'fill-color': ['match', ['get', 'zone'], 'central', '#22c55e', 'inner', '#eab308', '#ef4444'],
+            'fill-opacity': 0.15,
+          },
+        }, 'route');
+        map.addLayer({
+          id: 'coverage-outline',
+          type: 'line',
+          source: 'coverage',
+          layout: { visibility: showZonesRef.current ? 'visible' : 'none' },
+          paint: {
+            'line-color': ['match', ['get', 'zone'], 'central', '#16a34a', 'inner', '#ca8a04', '#dc2626'],
+            'line-width': 2,
+            'line-dasharray': [4, 2],
+          },
+        }, 'route');
+        coverageReadyRef.current = true;
+
         // Clinic markers
         clinics
           .filter((c) => c.status === 'active')
@@ -211,6 +247,26 @@ export default function ClinicMap({
       map.flyTo({ center: [userLocation[1], userLocation[0]], zoom: 13, duration: 1000 });
     })();
   }, [userLocation]);
+
+  // Sync latest coverageZones + showZones into refs; update map if ready
+  useEffect(() => {
+    coverageZonesRef.current = coverageZones ?? null;
+    if (!mapRef.current || !coverageReadyRef.current) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (mapRef.current.getSource('coverage') as any)?.setData(
+      coverageZones ?? { type: 'FeatureCollection', features: [] }
+    );
+  }, [coverageZones]);
+
+  useEffect(() => {
+    showZonesRef.current = showZones;
+    if (!mapRef.current || !coverageReadyRef.current) return;
+    const vis = showZones ? 'visible' : 'none';
+    if (mapRef.current.getLayer('coverage-fill')) {
+      mapRef.current.setLayoutProperty('coverage-fill', 'visibility', vis);
+      mapRef.current.setLayoutProperty('coverage-outline', 'visibility', vis);
+    }
+  }, [showZones]);
 
   // Draw/clear route
   useEffect(() => {

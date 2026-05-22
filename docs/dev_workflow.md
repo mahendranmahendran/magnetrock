@@ -182,3 +182,46 @@ git checkout -b week2-advanced-features
 ---
 
 **Save this as a reference!** These are the only 4-5 commands you'll use 90% of the time.
+
+
+
+
+
+You're currently on week1. Here are the commands to run  
+  in order:                                  
+                                                           
+  # 1. Create the week2 branch from current state        
+  git checkout -b week2                                    
+   
+  # 2. Stage all Week 2 changes                            
+  git add app/booking/page.tsx \                         
+          app/locations/page.tsx \                         
+          components/ClinicMap.tsx \                       
+          components/CoverageLayer.tsx \
+          components/ClinicMiniMap.tsx \                   
+          app/api/coverage/ \                            
+          app/api/isochrone/ \
+          app/api/matrix/ \
+          data/coverage-zones.json \                       
+          data/coverage-fees.json \
+          docs/week2-code-summary.html \                   
+          package.json \                                 
+          package-lock.json
+                                                           
+  # 3. Commit
+  git commit -m "Week 2: coverage zones, autocomplete,     
+  coverage check, matrix API, mini-map"                    
+   
+  # 4. Push to remote                                      
+  git push -u origin week2                               
+
+  What each step does:
+  - Step 1 — branches off week1 so the full project history
+   is preserved                                            
+  - Step 2 — stages only the Week 2 files (avoids
+  accidentally picking up anything else)                   
+  - Step 3 — single commit for the whole week (matching the
+   Week 1 pattern from your git log)                       
+  - Step 4 — -u origin week2 sets the upstream so future   
+  git push works without arguments                       
+                               
