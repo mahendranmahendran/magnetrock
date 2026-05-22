@@ -54,18 +54,37 @@ export default function ClinicMap({
       const styleRes = await fetch(`/api/tiles/styles?style=light`);
       const style = await styleRes.json();
 
-      // Replace every Mapsi tile URL in sources with our /api/tiles/... proxy path
+      // Rewrite inline tile URL arrays and pre-expand TileJSON sources.
+      // Pre-expanding converts sources with `url` (TileJSON) into inline `tiles` arrays
+      // so MapLibre never fetches a TileJSON directly — eliminating any path for a
+      // mapsi.dev URL to reach the browser before transformRequest can intercept it.
+      const rewriteUrl = (u: string) =>
+        u.replace(/https?:\/\/[^/]*mapsi\.dev(?:\/v\d+)?\/tiles\//, '/api/tiles/')
+         .replace(/[?&]key=[^&]+/g, '');
+
       for (const src of Object.values(style.sources ?? {}) as Record<string, unknown>[]) {
         if (Array.isArray(src.tiles)) {
-          src.tiles = (src.tiles as string[]).map((t: string) =>
-            t.replace(/https?:\/\/[^/]*mapsi\.dev(?:\/v\d+)?\/tiles\//, '/api/tiles/')
-             .replace(/[?&]key=[^&]+/g, '')
-          );
+          src.tiles = (src.tiles as string[]).map(rewriteUrl);
         }
         if (typeof src.url === 'string') {
-          src.url = src.url
-            .replace(/https?:\/\/[^/]*mapsi\.dev(?:\/v\d+)?\/tiles\//, '/api/tiles/')
-            .replace(/[?&]key=[^&]+/g, '');
+          const proxyUrl = rewriteUrl(src.url as string);
+          if (proxyUrl.startsWith('/api/tiles/')) {
+            try {
+              const tjRes = await fetch(proxyUrl);
+              if (tjRes.ok) {
+                const tj = await tjRes.json() as Record<string, unknown>;
+                if (Array.isArray(tj.tiles) && (tj.tiles as string[]).length > 0) {
+                  src.tiles = (tj.tiles as string[]).map(rewriteUrl);
+                  if (tj.minzoom !== undefined) src.minzoom = tj.minzoom;
+                  if (tj.maxzoom !== undefined) src.maxzoom = tj.maxzoom;
+                  if (tj.attribution !== undefined) src.attribution = tj.attribution;
+                  delete src.url;
+                }
+              }
+            } catch { /* keep url if TileJSON fetch fails */ }
+          } else {
+            src.url = proxyUrl;
+          }
         }
       }
 
